@@ -1,0 +1,8 @@
+prefix=/home/curc/Workspace/mate-rov/install
+
+Name: vision
+Description: Description of vision
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/curc/Workspace/mate-rov/install/lib 
+Requires: 

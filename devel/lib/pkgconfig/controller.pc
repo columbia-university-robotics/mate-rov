@@ -1,0 +1,8 @@
+prefix=/home/curc/Workspace/mate-rov/devel
+
+Name: controller
+Description: Description of controller
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/curc/Workspace/mate-rov/devel/lib 
+Requires: 
