@@ -46,7 +46,7 @@ class TextPrint(object):
 pygame.init()
 
 # Set the width and height of the screen (width, height).
-screen = pygame.display.set_mode((500, 700))
+screen = pygame.display.set_mode((500, 900))
 
 pygame.display.set_caption("My Game")
 
@@ -68,6 +68,9 @@ arx = np.chararray((dimensions,dimensions), unicode=True , offset = 3)   # ( row
 arx.fill(emptyChar)
 arx[ np.size(arx,0)//2 , np.size(arx,1)//2 ] = "*"
 currentPosition = [ np.size(arx,0)//2 , np.size(arx,1)//2 ]
+#def resetArx():
+    
+
 def update_Arx( x = 0, y = 0):
     global arx
     global drawChar
@@ -155,7 +158,7 @@ Movement:
                  1.ax1                             1.ax3
       
         """
-        for i in range(axes):
+        for i in range(axes):   # each axis is a different topic
             axis = joystick.get_axis(i)
             if( i == 0):
             #-----left_joy
@@ -178,6 +181,15 @@ Movement:
                 elif( round(axis,6) > 0 ): #DOWN
                     ar[2,1] = round(axis,1) 
                 update_Arx( x = 0, y = axis)
+            if( i == 2):
+            #-----left_joy
+            #      controls
+            #     LEFT  RIGHT
+            #     -1     1
+                if( round(axis,6) < 0 ): #LEFT
+                    ar2[1,0] = round(axis,1)
+                elif( round(axis,6) > 0 ): #RIGHT
+                    ar2[1,2] = round(axis,1)                
             if( i == 3):
             #-----right_joy
             #      controls
@@ -187,15 +199,7 @@ Movement:
                     ar2[0,1] = round(axis,1)
                 elif( round(axis,6) > 0 ): #DOWN
                     ar2[2,1] = round(axis,1)            
-            if( i == 4):
-            #-----left_joy
-            #      controls
-            #     LEFT  RIGHT
-            #     -1     1
-                if( round(axis,6) < 0 ): #LEFT
-                    ar2[1,0] = round(axis,1)
-                elif( round(axis,6) > 0 ): #RIGHT
-                    ar2[1,2] = round(axis,1)
+
 
             textPrint.tprint(screen, "Axis {} value: {:>6.3f}".format(i, axis))
         textPrint.unindent()
@@ -206,15 +210,15 @@ Movement:
         textPrint.tprint(screen, "{:6.1f}  {:6.1f}  {:6.1f}                        {:6.1f}  {:6.1f}  {:6.1f}".format( ar[2,0] , ar[2,1] , ar[2,2] , ar2[2,0] , ar2[2,1] , ar2[2,2]))
         
         
-        for j in range(np.size(arx , 0)):
-            rowString = ""
-            for k in range(np.size(arx , 1)):
-                if( arx[j,k] == emptyChar ):
-                    rowString += " " +")("+ " "
-                else:
-                    rowString += " " + arx[j,k] + " "
-            textPrint.tprint(screen, rowString)
-        
+#        for j in range(np.size(arx , 0)):
+#            rowString = ""
+#            for k in range(np.size(arx , 1)):
+#                if( arx[j,k] == emptyChar ):
+#                    rowString += " " +")("+ " "
+#                else:
+#                    rowString += " " + arx[j,k] + " "
+#            textPrint.tprint(screen, rowString)
+#        
         
         
         """
@@ -222,6 +226,7 @@ Movement:
 #########                 __INIT__ BUTTONS                       ################
 ######### THIS PART CONTROLS THE REST OF THE CONTROLLER BUTTONS ################
 ################################################################################
+        """
         buttons = joystick.get_numbuttons()
         textPrint.tprint(screen, "Number of buttons: {}".format(buttons))
         textPrint.indent()
@@ -243,6 +248,7 @@ Movement:
         textPrint.unindent()
 
         textPrint.unindent()
+        """
 ################################################################################
 #########                     END BUTTONS                       ################
 ################################################################################
