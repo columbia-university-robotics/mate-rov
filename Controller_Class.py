@@ -4,7 +4,8 @@
 
 
 import pygame
-
+#import rospy
+#from std_msgs.msg import String
 
 class Controller(object):
 	#controller = None
@@ -76,6 +77,13 @@ if __name__ == "__main__":
 	control = Controller()
 	control.init()
 	while( True ):
+# http://wiki.ros.org/msg   #    float32
+	#pub = rospy.Publisher('controller', String, queue_size=10)
+	#rospy.init_node('joystick')
+	#rospy.init_node('button')
+	#rospy.init_node('arrow')
+	r = rospy.Rate(10) # 10hz
+	#while( not rospy.is_shutdown() ):
 		action_dict = control.get_actions()
 		
 		for k,v in action_dict.items() :
@@ -88,7 +96,7 @@ if __name__ == "__main__":
 			if( "arrow" in k ):
 				# publish necessary arrow values
 				pass
-		
+		#r.sleep()
 
 
 
