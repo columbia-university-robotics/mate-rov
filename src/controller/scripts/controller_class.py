@@ -26,16 +26,15 @@ class Controller(object):
                     action_dict = self.get_actions()
                     
                     for k,v in action_dict.items() :
-                            if( v != 0 or v != 0.0 and not "arrow" in k):
+                            if( v != 0 or v != 0.0 and "joystick" in k):
+                                    print( k )
+                                    print( v )
+			        
+                            if( "joystick" in k ):
+                                    # publish necessary joystick values
                                     left_vert_pub.publish(v)
                                     print( k )
                                     print( v )
-                            elif( "arrow" in k and v[0] != 0 or v[1] != 0 ):
-                                    print( k )
-                                    print( v )			        
-                            if( "joystick" in k ):
-                                    # publish necessary joystick values
-                                    pass
                             if( "button" in k ):
                                     # publish necessary button values
                                     pass
@@ -72,22 +71,22 @@ class Controller(object):
                         #-----left_joy   controls
                         #     LEFT  RIGHT
                         #     -1     1
-                            self.actions[("joystick", "left" , "horizontal")] = round(axis_value,1)
+                            self.actions[("joystick", "left" , "horizontal")] = round(axis_value,4)
                         if( i == 1):
                         #-----left_joy   controls
                         #     UP     DOWN
                         #     -1     1
-                            self.actions[ ("joystick", "left" , "vertical") ] = round(axis_value,1)
+                            self.actions[ ("joystick", "left" , "vertical") ] = round(axis_value,4)
                         if( i == 2):
                         #-----left_joy   controls
                         #     LEFT  RIGHT
                         #     -1     1
-                            self.actions[ ("joystick", "right" , "horizontal") ] = round(axis_value,1)
+                            self.actions[ ("joystick", "right" , "horizontal") ] = round(axis_value,4)
                         if( i == 3):
                         #-----right_joy   controls
                         #     UP     DOWN
                         #     -1     1
-                            self.actions[ ("joystick", "right" , "vertical") ] = round(axis_value,1)           
+                            self.actions[ ("joystick", "right" , "vertical") ] = round(axis_value,4)           
                     buttons = joystick.get_numbuttons()
                     for i in range(buttons):
                         button_value = joystick.get_button(i)
