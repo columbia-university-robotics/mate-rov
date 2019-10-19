@@ -5,7 +5,7 @@
 
 import pygame
 import rospy
-#from std_msgs.msg import String
+from std_msgs.msg import Float32
 
 class Controller(object):
 	def __init__(self):
@@ -14,6 +14,41 @@ class Controller(object):
 
 		self.actions = {}
     		self.joystick_count = pygame.joystick.get_count()
+
+        # http://wiki.ros.org/msg   #    Float32
+                rospy.init_node('controller')
+                pub = rospy.Publisher('joystick', Float32, queue_size=10)
+                pub = rospy.Publisher('button', Float32, queue_size=10)
+                pub = rospy.Publisher('arrow', Float32, queue_size=10)
+                r = rospy.Rate(10) # 10hz
+                while not rospy.is_shutdown():
+                    action_dict = self.get_actions()
+                    
+                    for k,v in action_dict.items() :
+                            if( v != 0 or v != 0.0 and not "arrow" in k):
+                                    print( k )
+                                    print( v )
+                            elif( "arrow" in k and v[0] != 0 or v[1] != 0 ):
+                                    print( k )
+                                    print( v )			        
+                            if( "joystick" in k ):
+                                    # publish necessary joystick values
+                                    pass
+                            if( "button" in k ):
+                                    # publish necessary button values
+                                    pass
+                            if( "arrow" in k ):
+                                    # publish necessary arrow values
+                                    pass
+                    try:
+                        image_publisher.publish(image_message)
+                    except CvBridgeError as e:
+                        print(e)
+
+                    if (cv2.waitKey(1) == 27)
+                        break
+
+                    r.sleep()
 
 	def get_actions( self ):
 		# to be used with a loop that read all the current actions
@@ -80,32 +115,7 @@ if __name__ == "__main__":
 	# right top bumper straight up , right bottom bumper straight down
 	control = Controller()
 	while( True ):
-# http://wiki.ros.org/msg   #    float32
-	#pub = rospy.Publisher('controller', String, queue_size=10)
-	#rospy.init_node('joystick')
-	#rospy.init_node('button')
-	#rospy.init_node('arrow')
-	#r = rospy.Rate(10) # 10hz
 	#while( not rospy.is_shutdown() ):
-		action_dict = control.get_actions()
-		
-		for k,v in action_dict.items() :
-                        if( v != 0 or v != 0.0 and not "arrow" in k):
-                                print( k )
-			        print( v )
-			elif( "arrow" in k and v[0] != 0 or v[1] != 0 ):
-                                print( k )
-			        print( v )			        
-			if( "joystick" in k ):
-				# publish necessary joystick values
-				pass
-			if( "button" in k ):
-				# publish necessary button values
-				pass
-			if( "arrow" in k ):
-				# publish necessary arrow values
-				pass
-		#r.sleep()
 
 
 
