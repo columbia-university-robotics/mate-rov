@@ -11,6 +11,7 @@ import cv2
 import imutils
 import time
 import os
+import tracker
 
 def nothing(x):
     pass
@@ -24,7 +25,7 @@ ap.add_argument("-b", "--buffer", type=int, default=64,
 args = vars(ap.parse_args())
 
 setting = {'hue_min':0, 'hue_max': 180, 'sat_min': 0, 'sat_max': 255, 'val_min': 0, 'val_max': 255}
-setting_file = os.path.join(os.path.expanduser('~'), '.multithresh.json')
+setting_file = os.path.join(os.path.expanduser('~'), '.multithresh.json') #for loading specific thresholds later on
 if os.path.exists(setting_file):
     with open(setting_file, 'r') as f:
         setting = json.load(f)
@@ -63,6 +64,8 @@ else:
 #delay for camera init
 time.sleep(2.0)
 
+#takes input from cv2 sliders to adjust hsv min/max values
+#shows trackbars on different window, 'track'
 def refresh_color(min, max, frame):
     hsv_hue_min = cv2.getTrackbarPos('h_min', 'track')
     hsv_saturation_min = cv2.getTrackbarPos('s_min', 'track')
@@ -71,8 +74,6 @@ def refresh_color(min, max, frame):
     hsv_hue_max = cv2.getTrackbarPos('h_max', 'track')
     hsv_saturation_max = cv2.getTrackbarPos('s_max', 'track')
     hsv_value_max = cv2.getTrackbarPos('v_max', 'track')
-
-    cv2.imshow('track', frame)
 
     upper[2] = hsv_value_max
     upper[1] = hsv_saturation_max
@@ -87,16 +88,8 @@ def refresh_color(min, max, frame):
     print(f"Sat: {lower[1]/2.55:.0f}-{upper[1]/2.55:.0f} %")
     print(f"Val: {lower[2]/2.55:.0f}-{upper[2]/2.55:.0f} %")
 
-while True: 
-    frame = vs.read()
-    #take frame from webcam or video file
-    frame = frame [1] if args.get("video", False) else frame
-
-    if frame is None:
-        break
-
-    refresh_color(lower, upper, frame)
-
+#takes raw frame and performs color filtering and noise reduction
+def process(frame):
     #resize frame, blur, convert to HSV registering
     #frame = imutils.resize(frame, width=640)
     blurred = cv2.GaussianBlur(frame, (11,11), 0)
@@ -107,15 +100,27 @@ while True:
     mask = cv2.inRange(hsv, lower, upper)
     mask = cv2.erode(mask, None, iterations=2)
     mask = cv2.dilate(mask, None, iterations=2)
+    #kernel = cv2.getStructuringElement(cv2.MORPH_RECT,(3,3))
+    #kernel = cv2.getStructuringElement(cv2.MORPH_CROSS,(3,3))
+    #erode followed by dilate to reduce noise
+    #mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)  
+
     #by this point, should be able to detect filtered out blue bottle cap
-    
+    return mask
+
+#finds contours and does stuff to them
+def track_targets(mask, frame):
     #finding contours in mask, init (x,y) of ball
     cntrs = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,
-        cv2.CHAIN_APPROX_SIMPLE)
+        cv2.CHAIN_APPROX_NONE)
     cntrs = imutils.grab_contours(cntrs)
     center = None
 
+    for contour in cntrs:
+        cv2.drawContours(mask, [contour], 0, (255, 0, 255), 3)
+
     #continue if >=1 contours found
+    #doin stuff to contours
     if len(cntrs) > 0:
         #find largest contour in mask
         #computer minimum enclosing circle and centroid
@@ -128,10 +133,14 @@ while True:
         #cap must meet certain min radius
         #adjust HERE for different sized balls
         if radius > 0.5:
-            #draw circle, centroid on frame, upadte list of points
+            #draw circle, centroid on frame, update list of points
             cv2.circle(frame, (int(x), int(y)), int(radius),
             (0, 255, 255), 2)
             cv2.circle(frame, center, 5, (0, 0, 255), -1)
+            cv2.circle(mask, (int(x), int(y)), int(radius),
+            (0, 255, 255), 2)
+            cv2.circle(mask, center, 5, (0, 0, 255), -1)
+
 
     pts.appendleft(center)
     #draw trail of centroid points
@@ -144,16 +153,34 @@ while True:
         thickness = int(np.sqrt(args["buffer"] 
             / float(i + 1))*2.5)
         cv2.line(frame, pts[i-1], pts[i], (0, 0, 255), thickness)
+        cv2.line(mask, pts[i-1], pts[i], (0, 0, 255), thickness)
 
-    #show frame
+
+while vs.read() is not None: 
+    frame = vs.read()
+    #take frame from webcam or video file
+    frame = frame [1] if args.get("video", False) else frame
+    """ if frame is None:
+        break """
+
+    #shows unfiltered frame
+    refresh_color(lower, upper, frame)
+    cv2.imshow('track', frame)
+    #processes frame for contour detection
+    mask = process(frame)
+    #performs contour detection as desired
+    #draws contours on mask and frame
+    track_targets(mask, frame)
+
+    #show process, detected name
     cv2.imshow(w_name, mask)
     key_press = cv2.waitKey(20)
     if key_press == 27:
         break
 
-
 if not args.get("video", False):
     vs.stop()
 else:
     vs.release()
+
 cv2.destroyWindow(w_name)
