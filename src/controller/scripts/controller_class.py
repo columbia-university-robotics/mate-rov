@@ -13,6 +13,7 @@ class Controller(object):
 		pygame.joystick.init()
 
 		self.actions = {}
+		self.lastActions = {}
     		self.joystick_count = pygame.joystick.get_count()
 
         # http://wiki.ros.org/msg   #    Float32
@@ -21,28 +22,70 @@ class Controller(object):
 		left_hori_pub = rospy.Publisher('controller/left_hori', Float32, queue_size=10)
 		right_vert_pub = rospy.Publisher('controller/right_vert', Float32, queue_size=10)
 		right_hori_pub = rospy.Publisher('controller/right_hori', Float32, queue_size=10)
+		right_topbumper_pub = rospy.Publisher('controller/right_topbumper', Float32, queue_size=10)
+		right_botbumper_pub = rospy.Publisher('controller/right_bottombumper', Float32, queue_size=10)
                 r = rospy.Rate(10) # 10hz
                 while not rospy.is_shutdown():
+		    self.lastActions = self.actions
                     action_dict = self.get_actions()
-                    
                     for k,v in action_dict.items() :
-                            if( v != 0 or v != 0.0 and "joystick" in k):
-                                    print( k )
-                                    print( v )
-			        
                             if( "joystick" in k ):
                                     # publish necessary joystick values
-                                    left_vert_pub.publish(v)
                                     print( k )
-                                    print( v )
+				    if( "left" in k ):
+                                    	print( "IN LEFT ")
+                                        if( "vertical" in k):# and self.hasChanged("JLV") ):
+                                    	    #print( "IN JLV ")
+                                            left_vert_pub.publish(v)
+					elif( "horizontal" in k):# and self.hasChanged("JLH") ):
+                                    	    left_hori_pub.publish(v)
+				    elif( "right" in k ):
+					if( "vertical" in k):# and self.hasChanged("JRV") ):
+                                    	    #print( "IN JRV ")
+                                    	    right_vert_pub.publish(v)
+					elif( "horizontal" in k):# and self.hasChanged("JRH") ):
+                                    	    right_hori_pub.publish(v)
                             if( "button" in k ):
-                                    # publish necessary button values
-                                    pass
+                                # publish necessary button values
+				if( 5 in k):# and self.hasChanged("B5") ):
+                                    #print( "IN B5 ")
+                                    right_topbumper_pub.publish(v)
+				elif( 7 in k):# and self.hasChanged("B7") ):
+                                    right_botbumper_pub.publish(v)
                             if( "arrow" in k ):
                                     # publish necessary arrow values
                                     pass
                 
                     r.sleep()
+	def hasChanged( self , abbreviated_key ):
+		if( abbreviated_key == "JLV" ):
+			if( self.actions[("joystick", "left" , "vertical")] == self.lastActions[("joystick", "left" , "vertical")]):
+				return False
+			return True
+		elif( abbreviated_key == "JLH" ):
+			if( self.actions[("joystick", "left" , "horizontal")] == self.lastActions[("joystick", "left" , "horizontal")]):
+				return False
+			return True
+		elif( abbreviated_key == "JRV" ):
+			if( self.actions[("joystick", "right" , "vertical")] == self.lastActions[("joystick", "right" , "vertical")]):
+				return False
+			return True
+		elif( abbreviated_key == "JRH" ):
+			if( self.actions[("joystick", "right" , "horizontal")] == self.lastActions[("joystick", "right" , "horizontal")]):
+				return False
+			return True
+		elif( abbreviated_key == "B5" ): # right top bumper
+			if( self.actions[("button",5)] == self.lastActions[("button",5)]):
+				return False
+			return True
+		elif( abbreviated_key == "B7" ): # right bottom bumper
+			if( self.actions[("button",7)] == self.lastActions[("button",7)]):
+				return False
+			return True
+		elif( abbreviated_key == "SOMEARROW" ):
+			if( self.actions == self.lastActions):
+				return False
+			return True
 
 	def get_actions( self ):
 		# to be used with a loop that read all the current actions
