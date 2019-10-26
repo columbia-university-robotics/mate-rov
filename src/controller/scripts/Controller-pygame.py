@@ -212,8 +212,9 @@ Movement:
 		# =======================================
 		# publish axis -- left joystick horizontal
 
-             textPrint.tprint(screen, "Axis {} value: {:>6.3f}".format(i, axis))
-        textPrint.unindent()
+                textPrint.tprint(screen, "Axis {} value: {:>6.3f}".format(i, axis))
+        
+	textPrint.unindent()
         textPrint.tprint(screen, "")
         textPrint.tprint(screen, "           LEFT                                         RIGHT")
         textPrint.tprint(screen, "{:6.1f}  {:6.1f}  {:6.1f}                        {:6.1f}  {:6.1f}  {:6.1f}".format( ar[0,0] , ar[0,1] , ar[0,2] , ar2[0,0] , ar2[0,1] , ar2[0,2] ))
