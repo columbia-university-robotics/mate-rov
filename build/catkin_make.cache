@@ -1,2 +1,0 @@
-controller:vision
--DCATKIN_DEVEL_PREFIX=/home/curc/Workspace/mate-rov/devel -DCMAKE_INSTALL_PREFIX=/home/curc/Workspace/mate-rov/install -G Unix Makefiles
