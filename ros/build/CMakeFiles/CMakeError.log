@@ -1,0 +1,56 @@
+Determining if the pthread_create exist failed with the following output:
+Change Dir: /home/curc/Workspace/mate-rov/ros/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_88826/fast"
+/usr/bin/make -f CMakeFiles/cmTC_88826.dir/build.make CMakeFiles/cmTC_88826.dir/build
+make[1]: Entering directory '/home/curc/Workspace/mate-rov/ros/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_88826.dir/CheckSymbolExists.c.o
+/usr/bin/cc    -o CMakeFiles/cmTC_88826.dir/CheckSymbolExists.c.o   -c /home/curc/Workspace/mate-rov/ros/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Linking C executable cmTC_88826
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_88826.dir/link.txt --verbose=1
+/usr/bin/cc      -rdynamic CMakeFiles/cmTC_88826.dir/CheckSymbolExists.c.o  -o cmTC_88826 
+CMakeFiles/cmTC_88826.dir/CheckSymbolExists.c.o: In function `main':
+CheckSymbolExists.c:(.text+0x14): undefined reference to `pthread_create'
+CheckSymbolExists.c:(.text+0x18): undefined reference to `pthread_create'
+collect2: error: ld returned 1 exit status
+CMakeFiles/cmTC_88826.dir/build.make:97: recipe for target 'cmTC_88826' failed
+make[1]: *** [cmTC_88826] Error 1
+make[1]: Leaving directory '/home/curc/Workspace/mate-rov/ros/build/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_88826/fast' failed
+make: *** [cmTC_88826/fast] Error 2
+
+File /home/curc/Workspace/mate-rov/ros/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <pthread.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef pthread_create
+  return ((int*)(&pthread_create))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /home/curc/Workspace/mate-rov/ros/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_4e26c/fast"
+/usr/bin/make -f CMakeFiles/cmTC_4e26c.dir/build.make CMakeFiles/cmTC_4e26c.dir/build
+make[1]: Entering directory '/home/curc/Workspace/mate-rov/ros/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_4e26c.dir/CheckFunctionExists.c.o
+/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTC_4e26c.dir/CheckFunctionExists.c.o   -c /usr/share/cmake-3.10/Modules/CheckFunctionExists.c
+Linking C executable cmTC_4e26c
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_4e26c.dir/link.txt --verbose=1
+/usr/bin/cc  -DCHECK_FUNCTION_EXISTS=pthread_create    -rdynamic CMakeFiles/cmTC_4e26c.dir/CheckFunctionExists.c.o  -o cmTC_4e26c -lpthreads 
+/usr/bin/ld: cannot find -lpthreads
+collect2: error: ld returned 1 exit status
+CMakeFiles/cmTC_4e26c.dir/build.make:97: recipe for target 'cmTC_4e26c' failed
+make[1]: *** [cmTC_4e26c] Error 1
+make[1]: Leaving directory '/home/curc/Workspace/mate-rov/ros/build/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_4e26c/fast' failed
+make: *** [cmTC_4e26c/fast] Error 2
+
+
