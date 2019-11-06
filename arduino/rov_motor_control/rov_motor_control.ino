@@ -12,13 +12,23 @@
  * (c) Columbia University Robotics Club, 2019 - 2020.
  * All Rights Reserved. Development by the Software & Arduino Team. 
  * Contact: Neil, yn2376@columbia.edu
- * 
+ *
+https://github.com/ros-drivers/rosserial/tree/melodic-devel/rosserial_arduino
+
+
+https://answers.ros.org/question/264764/rosserial-arduino-due-sync-issues/
+
+http://docs.ros.org/jade/api/rosserial_arduino/html/ArduinoHardware_8h_source.html
+
+ http://docs.ros.org/jade/api/rosserial_arduino/html/ArduinoHardware_8h.html
  */
+//#define USE_USBCON
+
 
 #include <Servo.h>
 #include <ros.h>
 #include <std_msgs/Float32.h>
-
+#include "
 ros::NodeHandle nh;
 
 // define all constants
