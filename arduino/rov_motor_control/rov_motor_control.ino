@@ -55,10 +55,10 @@ void right_vert_cb( const std_msgs::Float32& msg){
 }
 
 // declare all ROS pub inst. vars. 
-// ros::Subscriber<std_msgs::Float32> lh_sub("/controller/left_hori", &left_hori_cb );
+ros::Subscriber<std_msgs::Float32> lh_sub("/controller/left_hori", &left_hori_cb );
 ros::Subscriber<std_msgs::Float32> lv_sub("/controller/left_vert", left_vert_cb );
-// ros::Subscriber<std_msgs::Float32> rh_sub("/controller/right_hori", &right_hori_cb );
-// ros::Subscriber<std_msgs::Float32> rv_sub("/controller/right_vert", &right_vert_cb );
+ros::Subscriber<std_msgs::Float32> rh_sub("/controller/right_hori", &right_hori_cb );
+ros::Subscriber<std_msgs::Float32> rv_sub("/controller/right_vert", &right_vert_cb );
 
 // ===================================================
 // ====================== setup ======================
@@ -68,10 +68,10 @@ void setup() {
 
   // init node handler
   nh.initNode();
-  // nh.subscribe(lh_sub);
+  nh.subscribe(lh_sub);
   nh.subscribe(lv_sub);
-  // nh.subscribe(rh_sub);
-  // nh.subscribe(rv_sub);
+  nh.subscribe(rh_sub);
+  nh.subscribe(rv_sub);
   
   // initialize serial communication 
   motor_fl.attach(MOTOR_PORT);
