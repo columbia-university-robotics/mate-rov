@@ -22,17 +22,16 @@ http://docs.ros.org/jade/api/rosserial_arduino/html/ArduinoHardware_8h_source.ht
 
  http://docs.ros.org/jade/api/rosserial_arduino/html/ArduinoHardware_8h.html
  */
-//#define USE_USBCON
 
 
 #include <Servo.h>
 #include <ros.h>
 #include <std_msgs/Float32.h>
-#include "
 ros::NodeHandle nh;
 
 // define all constants
-int MOTOR_PORT = 3;
+int MOTOR_PORT_1 = 2;
+int MOTOR_PORT_2 = 3;
 int POTEN_LOW = -1;
 int POTEN_HIGH = 1; 
 int PULSE_WIDTH_LOW = 1100;
@@ -65,10 +64,10 @@ void right_vert_cb( const std_msgs::Float32& msg){
 }
 
 // declare all ROS pub inst. vars. 
-// ros::Subscriber<std_msgs::Float32> lh_sub("/controller/left_hori", &left_hori_cb );
+ros::Subscriber<std_msgs::Float32> lh_sub("/controller/left_hori", &left_hori_cb );
 ros::Subscriber<std_msgs::Float32> lv_sub("/controller/left_vert", left_vert_cb );
-// ros::Subscriber<std_msgs::Float32> rh_sub("/controller/right_hori", &right_hori_cb );
-// ros::Subscriber<std_msgs::Float32> rv_sub("/controller/right_vert", &right_vert_cb );
+ros::Subscriber<std_msgs::Float32> rh_sub("/controller/right_hori", &right_hori_cb );
+ros::Subscriber<std_msgs::Float32> rv_sub("/controller/right_vert", &right_vert_cb );
 
 // ===================================================
 // ====================== setup ======================
@@ -81,11 +80,13 @@ void setup() {
   // nh.subscribe(lh_sub);
   nh.subscribe(lv_sub);
   // nh.subscribe(rh_sub);
-  // nh.subscribe(rv_sub);
+  nh.subscribe(rv_sub);
   
-  // initialize serial communication 
-  motor_fl.attach(MOTOR_PORT);
+  // initialize serial communication
+  motor_fr.attach(MOTOR_PORT_1);
+  motor_fl.attach(MOTOR_PORT_2);
   motor_fl.writeMicroseconds(PULSE_OFF);
+  motor_fr.writeMicroseconds(PULSE_OFF);
   delay(2000);
 }
 
@@ -96,6 +97,7 @@ void setup() {
 void loop() {
 
   motor_fl.writeMicroseconds(left_vert);
+  motor_fr.writeMicroseconds(right_vert);
   // ---------------
 
   int delay_sec = 3;
