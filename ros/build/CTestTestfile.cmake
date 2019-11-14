@@ -7,3 +7,4 @@
 subdirs("gtest")
 subdirs("controller")
 subdirs("vision")
+subdirs("zed_wrapper")
