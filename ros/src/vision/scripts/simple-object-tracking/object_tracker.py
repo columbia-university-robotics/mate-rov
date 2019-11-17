@@ -1,9 +1,15 @@
+#!/usr/bin/env python
+
+#######################################################################################
+#######################################################################################
+#######################################################################################
+#######################################################################################
 # USAGE
 # python object_tracker.py --prototxt deploy.prototxt --model res10_300x300_ssd_iter_140000.caffemodel
 
 # import the necessary packages
 from pyimagesearch.centroidtracker import CentroidTracker
-from imutils.video import VideoStream
+# from imutils.video import VideoStream
 import numpy as np
 import argparse
 import imutils
@@ -80,7 +86,7 @@ while True:
 #	frame = vs.read()
 #	frame = imutils.resize(frame, width=400)
 	frame = current_frame
-	frame = imutils.resize(frame, width=400)
+	# frame = cv2.resize(frame, width=400)
 	# if the frame dimensions are None, grab them
 	if W is None or H is None:
 		(H, W) = frame.shape[:2]
@@ -138,3 +144,10 @@ while True:
 # do a bit of cleanup
 cv2.destroyAllWindows()
 vs.stop()
+
+
+
+
+
+
+
