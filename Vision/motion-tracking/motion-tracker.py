@@ -1,20 +1,24 @@
 #William Xie 10/04/19
 #code used from: https://www.pyimagesearch.com/2015/09/14/ball-tracking-with-opencv/
 #since sample code used to detect a ball, likely will 
-#struggle on side profile views of cap
-
-from collections import deque
-from imutils.video import VideoStream
+#struggle on side profile views of cap2wa
+""" from imutils.video import VideoStream """
 import numpy as np
 import argparse
 import cv2
-import imutils
+""" import imutils """
 import time
 import os
 import tracker
+import collections
 
 def nothing(x):
     pass
+
+#WEBCAM: Logitech C270 Parameters
+CAM_fov = 60
+CAM_w = 640 #initially 1280
+CAM_h = 480 #initially 720
 
 #will not use args -v, --video
 ap = argparse.ArgumentParser()
@@ -38,7 +42,7 @@ upper = np.array([setting['hue_max'], setting['sat_max'], setting['val_max']])
 
 """ lower = (0, 0, 0)
 upper = (0, 0, 255) """
-pts = deque(maxlen=args["buffer"])
+pts = collections.deque(maxlen=args["buffer"])
 
 w_name = 'webcam'
 cv2.namedWindow(w_name)
@@ -55,7 +59,8 @@ cv2.createTrackbar('v_max', 'track', setting['val_max'], 255, nothing)
 
 #if no video, refer to webcam-->this is the desired behavior
 if not args.get("video", False):
-    vs = VideoStream(src=0).start()
+    #vs = VideoStream(src=0).start()
+    vs = cv2.VideoCapture(0)
 #if video specified, grab reference to file
 #might hardcode this later to search for index 1 webcam
 else:
@@ -90,8 +95,7 @@ def refresh_color(min, max, frame):
 
 #takes raw frame and performs color filtering and noise reduction
 def process(frame):
-    #resize frame, blur, convert to HSV registering
-    #frame = imutils.resize(frame, width=640)
+    #blur, convert to HSV registering
     blurred = cv2.GaussianBlur(frame, (11,11), 0)
     hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
 
@@ -113,7 +117,11 @@ def track_targets(mask, frame):
     #finding contours in mask, init (x,y) of ball
     cntrs = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,
         cv2.CHAIN_APPROX_NONE)
-    cntrs = imutils.grab_contours(cntrs)
+    if len(cntrs) == 2:
+        cntrs = cntrs[0]
+    elif len(cntrs) == 3:
+        cntrs = cntrs[1]
+    #cntrs = imutils.grab_contours(cntrs)
     center = None
 
     for contour in cntrs:
@@ -158,16 +166,19 @@ def track_targets(mask, frame):
 
 while vs.read() is not None: 
     frame = vs.read()
+    
     #take frame from webcam or video file
     frame = frame [1] if args.get("video", False) else frame
     """ if frame is None:
         break """
-
+    #frame = cv2.cvtColor(cv2.UMat(frame), cv2.COLOR_BGR2HSV)
+    #frame  = cv2.resize(frame, (CAM_w, CAM_h))
+    mask = process(frame)
+    #mask  = cv2.resize(mask, (CAM_w, CAM_h))
     #shows unfiltered frame
     refresh_color(lower, upper, frame)
     cv2.imshow('track', frame)
     #processes frame for contour detection
-    mask = process(frame)
     #performs contour detection as desired
     #draws contours on mask and frame
     track_targets(mask, frame)
