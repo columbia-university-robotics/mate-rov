@@ -1,12 +1,8 @@
 #William Xie 10/04/19
-#code used from: https://www.pyimagesearch.com/2015/09/14/ball-tracking-with-opencv/
-#since sample code used to detect a ball, likely will 
-#struggle on side profile views of cap2wa
-from imutils.video import VideoStream
+#code adapted from: https://www.pyimagesearch.com/2015/09/14/ball-tracking-with-opencv/
+#no imutils though
 import numpy as np
-import argparse
 import cv2
-""" import imutils """
 import time
 import os
 import tracker
@@ -34,14 +30,21 @@ def refresh_color(min, max, frame):
     lower[1] = hsv_saturation_min
     lower[2] = hsv_value_min
 
-    hsv_lower = lower[0]*2
-    hsv_upper = upper[0]*2
-    sat_lower = lower
+    hue_lower = lower[0]*2
+    hue_upper = upper[0]*2
+    sat_lower = lower[1]/2.55
     sat_upper = upper[1]/2.55
+    val_lower = lower[2]/2.55
+    val_upper = upper[2]/2.55
+
+    hue = "Hue: {}-{} deg".format(hue_lower, hue_upper)
+    sat = "Sat: {:0.2f}-{}".format(sat_lower, sat_upper)
+    val = "Val: {:0.2f}-{}".format(val_lower, val_upper)
     print("-"*50)
-    print(f"Hue: {lower[0]*2:d}-{upper[0]*2:d} deg")
-    print(f"Sat: {lower[1]/2.55:.0f}-{upper[1]/2.55:.0f} %")
-    print(f"Val: {lower[2]/2.55:.0f}-{upper[2]/2.55:.0f} %")
+    print(hue)
+    print(sat)
+    print(val)
+
 """     print "-"*50
     print f"Hue: {lower[0]*2:d}-{upper[0]*2:d} deg"
     print f"Sat: {lower[1]/2.55:.0f}-{upper[1]/2.55:.0f} %"
@@ -122,19 +125,7 @@ CAM_fov = 60
 CAM_w = 640 #initially 1280
 CAM_h = 480 #initially 720
 
-#will not use args -v, --video
-""" ap = argparse.ArgumentParser()
-ap.add_argument("-v", "--video",
-    help="path to the (optional) video file")
-ap.add_argument("-b", "--buffer", type=int, default=64, 
-    help="max buffer size")
-args = vars(ap.parse_args()) """
-
 setting = {'hue_min':0, 'hue_max': 180, 'sat_min': 0, 'sat_max': 255, 'val_min': 0, 'val_max': 255}
-""" setting_file = os.path.join(os.path.expanduser('~'), '.multithresh.json') #for loading specific thresholds later on
-if os.path.exists(setting_file):
-    with open(setting_file, 'r') as f:
-        setting = json.load(f) """
 
 #def lower/upper boundaries of the bottle cap, --> "blue"
 #range in HSV values, intialize list of range of hue, saturation, value
@@ -144,7 +135,6 @@ upper = np.array([setting['hue_max'], setting['sat_max'], setting['val_max']])
 
 """ lower = (0, 0, 0)
 upper = (0, 0, 255) """
-#pts = collections.deque(maxlen=args["buffer"])
 pts = collections.deque(maxlen=10)
 
 w_name = 'webcam'
@@ -159,15 +149,6 @@ cv2.createTrackbar('h_max', 'track', setting['hue_max'], 180, nothing)
 cv2.createTrackbar('s_max', 'track', setting['sat_max'], 255, nothing)
 cv2.createTrackbar('v_max', 'track', setting['val_max'], 255, nothing)
 
-#if no video, refer to webcam-->this is the desired behavior
-""" if not args.get("video", False):
-    vs = VideoStream(src=0).start() """
-    #vs = cv2.VideoCapture(0)
-#if video specified, grab reference to file
-#might hardcode this later to search for index 1 webcam
-""" else:
-    vs = cv2.VideoCapture(args["video"]) """
-
 #vs = VideoStream(src=0).start()
 vs = cv2.VideoCapture(0)
 
@@ -180,11 +161,6 @@ else:
 
 while rval: 
     rval, frame = vs.read()
-    
-    #take frame from webcam or video file
-    #frame = frame [1] if args.get("video", False) else frame
-    """ if frame is None:
-        break """
     
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     frame  = cv2.resize(frame, (CAM_w, CAM_h))
@@ -204,7 +180,7 @@ while rval:
     if key_press == 27:
         break
 
+cv2.destroyWindow(w_name)
 vs.release()
 
-cv2.destroyWindow(w_name)
 
