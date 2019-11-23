@@ -30,13 +30,19 @@ http://docs.ros.org/jade/api/rosserial_arduino/html/ArduinoHardware_8h_source.ht
 ros::NodeHandle nh;
 
 // define all constants
-int MOTOR_PORT_1 = 2;
-int MOTOR_PORT_2 = 3;
+int MOTOR_PORT_1 = 12;
+int MOTOR_PORT_2 = 11;
+int MOTOR_PORT_3 = 10;
+int MOTOR_PORT_4 = 9;
+int MOTOR_PORT_5 = 8;
+int MOTOR_PORT_6 = 7;
+int MOTOR_PORT_7 = 6;
+
 int POTEN_LOW = -1;
 int POTEN_HIGH = 1; 
 int PULSE_WIDTH_LOW = 1100;
 int PULSE_WIDTH_HIGH = 1900; 
-int PULSE_SLOW_OFFSET = 200; // subtract the high by the offset to get a smaller high
+int PULSE_SLOW_OFFSET = 100; // subtract the high by the offset to get a smaller high
 int PULSE_OFF = PULSE_WIDTH_LOW + (PULSE_WIDTH_HIGH - PULSE_WIDTH_LOW)/2;
 int BITS_PER_SEC = 57600;  
 float MIN_STICK_THRESHOLD = 0.01;
@@ -44,46 +50,81 @@ float rub = 0;
 float rbb = 0;
 float rb = 0;
 
+double pos = 0.0;  
+
+bool x, y, yaw_on;
+
+
+
 // ==========================================================================
 //    motor 1   motor 2   motor  3  motor 4   motor 7   motor 5    motor  6
 Servo motor_fl, motor_fr, motor_rr, motor_rl, motor_ru, motor_flu, motor_fru;
 float left_hori, left_vert, right_hori, right_vert;
 // ==========================================================================
 
+std_msgs::Float32 pos_msg;
+ros::Publisher pos_pub("/sensor/vehicle/steering/actuator_position", &pos_msg);
+
 // ===================================================
 // =============== ROS callback methods ==============
 // ===================================================
 
 void left_hori_cb( const std_msgs::Float32& msg){
+
   left_hori = mapf(msg.data, POTEN_LOW, POTEN_HIGH, PULSE_WIDTH_LOW, PULSE_WIDTH_HIGH);
-  move_x(left_hori);
+  // move_x(left_hori);
+  if (abs(msg.data) >= 0.01) {
+    x = true;
+  } else {
+    x = false;
+  }
+
+  if (x == true && y == false && yaw_on == false) {
+    move_x(left_hori);
+  }
 }
 
 void left_vert_cb( const std_msgs::Float32& msg){
+
   left_vert = mapf(-1.0*msg.data, POTEN_LOW, POTEN_HIGH, PULSE_WIDTH_LOW, PULSE_WIDTH_HIGH);
-  move_y(left_vert); // forward backward
+
+  if (abs(msg.data) >= 0.01) {
+    y = true;
+  } else {
+    y = false;
+  }
+
+  if (x == false && y == true && yaw_on == false) {
+    move_y(left_vert);
+  }
 }
 
 void right_hori_cb( const std_msgs::Float32& msg){
   right_hori = mapf(-1.0*msg.data, POTEN_LOW, POTEN_HIGH, PULSE_WIDTH_LOW, PULSE_WIDTH_HIGH);
-  yaw(right_hori);
+  
+  if (abs(msg.data) >= 0.01) {
+    yaw_on = true;
+  } else {
+    yaw_on = false;
+  }
+
+  if (x == false && y == false && yaw_on == true) {
+    yaw(right_hori);
+  }
 }
 
 void right_vert_cb( const std_msgs::Float32& msg){
   right_vert = mapf(-1.0*msg.data, POTEN_LOW, POTEN_HIGH, PULSE_WIDTH_LOW, PULSE_WIDTH_HIGH);
-  pitch(right_vert);
+  // pitch(right_vert);
 }
 
+
 void right_upper_bumper_cb(const std_msgs::Float32& msg) {
-  rub = mapf(msg.data, 0, 1, PULSE_OFF, PULSE_WIDTH_HIGH - PULSE_SLOW_OFFSET);
-  if (rbb == 0)
-    move_z(rub);
+  rub = msg.data;
 }
 
 void right_bottom_bumper_cb(const std_msgs::Float32& msg) {
-  rub = mapf(-1.0*msg.data, -1, 0, PULSE_WIDTH_LOW + PULSE_SLOW_OFFSET, PULSE_OFF);
-  if (rub == 0)
-    move_z(rub);
+  rbb = msg.data;
 }
 
 
@@ -110,11 +151,27 @@ void setup() {
   nh.subscribe(up_button_sub);
   nh.subscribe(down_button_sub);
   
+  nh.advertise(pos_pub);
+
+  
   // initialize serial communication
   motor_fr.attach(MOTOR_PORT_1);
   motor_fl.attach(MOTOR_PORT_2);
+  motor_rr.attach(MOTOR_PORT_3);
+  motor_rl.attach(MOTOR_PORT_4);
+  motor_ru.attach(MOTOR_PORT_5);
+  motor_flu.attach(MOTOR_PORT_6);
+  motor_fru.attach(MOTOR_PORT_7);
+
+  
   motor_fl.writeMicroseconds(PULSE_OFF);
   motor_fr.writeMicroseconds(PULSE_OFF);
+  motor_rr.writeMicroseconds(PULSE_OFF);
+  motor_rl.writeMicroseconds(PULSE_OFF);
+  motor_ru.writeMicroseconds(PULSE_OFF);
+  motor_flu.writeMicroseconds(PULSE_OFF);
+  motor_fru.writeMicroseconds(PULSE_OFF);
+  
   delay(2000);
 }
 
@@ -124,11 +181,27 @@ void setup() {
 // the loop routine runs over and over again forever:
 void loop() {
 
-  // ---------------
+  // -----debugging only -----
+  pos = left_vert;
+  pos_msg.data = pos;
+  pos_pub.publish(&pos_msg);
+  // -----debugging only -----
 
   int delay_sec = 3;
   nh.spinOnce();
-  
+
+  if (rub == 1 && rbb == 0){
+    move_z(1750);
+  } else if (rub == 0 && rbb == 1){
+    move_z(1250);
+  } else {
+    move_z(PULSE_OFF);
+  }
+
+  if (!x && !y && !yaw_on) {
+    move_y(PULSE_OFF);
+  }
+
   delay(delay_sec);        // delay in between reads for stability
 }
 
@@ -138,9 +211,10 @@ void loop() {
 
 // int powervalue;
 // controller by the verticle left joystick movement
-void move_y(float left_vert) {
+void move_y(int left_vert) {
   // forward / backwards (positive)
   // they are all spinning in the same direction
+  
   motor_fl.writeMicroseconds(left_vert);
   motor_fr.writeMicroseconds(left_vert);
   motor_rr.writeMicroseconds(left_vert);
@@ -148,12 +222,13 @@ void move_y(float left_vert) {
 }
 
 // horizontal left
-void move_x(float right_hori) {
+void move_x(float left_hori) {
   // motor 2 and 4 need to be reversed --> positive x
-  motor_fl.writeMicroseconds(right_hori);
-  motor_fr.writeMicroseconds(reverse_motor(right_hori));
-  motor_rr.writeMicroseconds(right_hori);
-  motor_rl.writeMicroseconds(reverse_motor(right_hori));
+  
+  motor_fl.writeMicroseconds(left_hori);
+  motor_fr.writeMicroseconds(reverse_motor(left_hori));
+  motor_rr.writeMicroseconds(left_hori);
+  motor_rl.writeMicroseconds(reverse_motor(left_hori));
 }
 
 void move_z(float value) {
@@ -191,8 +266,8 @@ void roll(float roll) {
   motor_flu.writeMicroseconds(reverse_motor(roll));
 }
 
-int reverse_motor(int in){
-  return 1500 - (in - 1500);
+float reverse_motor(float in){
+  return 1500.0 - (in - 1500.0);
 }
 
 float mapf(float x, float in_min, float in_max, float out_min, float out_max)
