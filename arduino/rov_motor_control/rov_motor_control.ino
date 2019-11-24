@@ -14,15 +14,10 @@
  * Contact: Neil, yn2376@columbia.edu
  *
 https://github.com/ros-drivers/rosserial/tree/melodic-devel/rosserial_arduino
-
-
 https://answers.ros.org/question/264764/rosserial-arduino-due-sync-issues/
-
 http://docs.ros.org/jade/api/rosserial_arduino/html/ArduinoHardware_8h_source.html
-
- http://docs.ros.org/jade/api/rosserial_arduino/html/ArduinoHardware_8h.html
+http://docs.ros.org/jade/api/rosserial_arduino/html/ArduinoHardware_8h.html
  */
-
 
 #include <Servo.h>
 #include <ros.h>
@@ -54,8 +49,6 @@ double pos = 0.0;
 
 bool x, y, yaw_on , vert , hori ;
 double diag ;
-
-
 
 // ==========================================================================
 //    motor 1   motor 2   motor  3  motor 4   motor 7   motor 5    motor  6
@@ -106,7 +99,7 @@ void left_hori_cb( const std_msgs::Float32& msg){
 }
 
 void left_vert_cb( const std_msgs::Float32& msg){
-  left_vert = mapf(-1.0*msg.data, POTEN_LOW, POTEN_HIGH, PULSE_WIDTH_LOW, PULSE_WIDTH_HIGH);
+  left_vert = mapf(-1.0 * msg.data, POTEN_LOW, POTEN_HIGH, PULSE_WIDTH_LOW, PULSE_WIDTH_HIGH);
 /*
 
   if (abs(msg.data) >= 0.01) {
@@ -169,8 +162,9 @@ ros::Subscriber<std_msgs::Float32> lh_sub("/controller/left_hori", &left_hori_cb
 ros::Subscriber<std_msgs::Float32> lv_sub("/controller/left_vert", left_vert_cb );
 ros::Subscriber<std_msgs::Float32> rh_sub("/controller/right_hori", &right_hori_cb );
 ros::Subscriber<std_msgs::Float32> rv_sub("/controller/right_vert", &right_vert_cb );
-ros::Subscriber<std_msgs::Float32> up_button_sub("/controller/right_topbumper", &right_upper_bumper_cb);
-ros::Subscriber<std_msgs::Float32> down_button_sub("/controller/right_bottombumper", &right_bottom_bumper_cb);
+// the top and buttom bupper needs to be switch. 
+ros::Subscriber<std_msgs::Float32> up_button_sub("/controller/right_topbumper", &right_bottom_bumper_cb);
+ros::Subscriber<std_msgs::Float32> down_button_sub("/controller/right_bottombumper", &right_upper_bumper_cb);
 
 // ===================================================
 // ====================== setup ======================
@@ -187,10 +181,10 @@ void setup() {
   nh.subscribe(up_button_sub);
   nh.subscribe(down_button_sub);
   
+  // the publisher is for debugging purposes. 
   nh.advertise(pos_pub);
 
-  
-  // initialize serial communication
+  // attach all motors. 
   motor_fr.attach(MOTOR_PORT_1);
   motor_fl.attach(MOTOR_PORT_2);
   motor_rr.attach(MOTOR_PORT_3);
@@ -199,7 +193,7 @@ void setup() {
   motor_flu.attach(MOTOR_PORT_6);
   motor_fru.attach(MOTOR_PORT_7);
 
-  
+  // turn all motors off.
   motor_fl.writeMicroseconds(PULSE_OFF);
   motor_fr.writeMicroseconds(PULSE_OFF);
   motor_rr.writeMicroseconds(PULSE_OFF);
@@ -208,7 +202,7 @@ void setup() {
   motor_flu.writeMicroseconds(PULSE_OFF);
   motor_fru.writeMicroseconds(PULSE_OFF);
   
-  delay(2000);
+  delay(1000);
 }
 
 // ===================================================
@@ -226,18 +220,16 @@ void loop() {
   int delay_sec = 3;
   nh.spinOnce();
 
-  if (rub == 1 && rbb == 0){
+  if (rub == 1 && rbb == 0)
     move_z(1750);
-  } else if (rub == 0 && rbb == 1){
+  else if (rub == 0 && rbb == 1)
     move_z(1250);
-  } else {
+  else
     move_z(PULSE_OFF);
-  }
-
-  if (!x && !y && !yaw_on) {
+  
+  if (!x && !y && !yaw_on)
     move_y(PULSE_OFF);
-  }
-
+  
   delay(delay_sec);        // delay in between reads for stability
 }
 
@@ -327,7 +319,6 @@ float reverse_motor(float in){
   return 1500.0 - (in - 1500.0);
 }
 
-float mapf(float x, float in_min, float in_max, float out_min, float out_max)
-{
+float mapf(float x, float in_min, float in_max, float out_min, float out_max){
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
