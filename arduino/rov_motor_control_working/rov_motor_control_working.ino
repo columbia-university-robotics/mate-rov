@@ -52,15 +52,14 @@ float rb = 0;
 
 double pos = 0.0;  
 
-bool x, y, yaw_on , vert , hori ;
-double diag ;
+bool x, y, yaw_on;
 
 
 
 // ==========================================================================
 //    motor 1   motor 2   motor  3  motor 4   motor 7   motor 5    motor  6
 Servo motor_fl, motor_fr, motor_rr, motor_rl, motor_ru, motor_flu, motor_fru;
-float left_hori, left_vert, right_hori, right_vert , unmapped_x , unmapped_y ;
+float left_hori, left_vert, right_hori, right_vert;
 // ==========================================================================
 
 std_msgs::Float32 pos_msg;
@@ -70,17 +69,10 @@ ros::Publisher pos_pub("/sensor/vehicle/steering/actuator_position", &pos_msg);
 // =============== ROS callback methods ==============
 // ===================================================
 
-float average_1_4(  ){  
-    diag = mapf( (unmapped_x + unmapped_y )/2 , POTEN_LOW, POTEN_HIGH, PULSE_WIDTH_LOW, PULSE_WIDTH_HIGH);
-    return diag ;
-}
-
 void left_hori_cb( const std_msgs::Float32& msg){
-  
+
   left_hori = mapf(msg.data, POTEN_LOW, POTEN_HIGH, PULSE_WIDTH_LOW, PULSE_WIDTH_HIGH);
   // move_x(left_hori);
-  hori = true ;
-/*  
   if (abs(msg.data) >= 0.01) {
     x = true;
   } else {
@@ -90,47 +82,21 @@ void left_hori_cb( const std_msgs::Float32& msg){
   if (x == true && y == false && yaw_on == false) {
     move_x(left_hori);
   }
-  */
- 
-  unmapped_x = msg.data ;  
-  if (hori && vert && yaw_on == false) {
-    move_fl_rr( average_1_4() );
-  }   
-  hori = true ;
-  if ( hori && vert ) {
-    move_fr_rl( average_1_4() );
-    hori = false ;
-    vert = false ;
-  }
-  
 }
 
 void left_vert_cb( const std_msgs::Float32& msg){
-  left_vert = mapf(-1.0*msg.data, POTEN_LOW, POTEN_HIGH, PULSE_WIDTH_LOW, PULSE_WIDTH_HIGH);
-/*
+
+  // flipped the sign during pool testing
+  left_vert = mapf(msg.data, POTEN_LOW, POTEN_HIGH, PULSE_WIDTH_LOW, PULSE_WIDTH_HIGH);
 
   if (abs(msg.data) >= 0.01) {
     y = true;
   } else {
     y = false;
-    
   }
+
   if (x == false && y == true && yaw_on == false) {
     move_y(left_vert);
-  }
-  */
-
-  
-  unmapped_y = msg.data ; 
-  if (hori && vert && yaw_on == false) {
-    move_fl_rr( average_1_4() );
-  }    
-  vert = true ;
-  unmapped_y *= -1.0 ; 
-  if ( hori && vert ) {
-    move_fr_rl( average_1_4() );
-    hori = false ;
-    vert = false ;
   }
 }
 
@@ -146,7 +112,6 @@ void right_hori_cb( const std_msgs::Float32& msg){
   if (x == false && y == false && yaw_on == true) {
     yaw(right_hori);
   }
-
 }
 
 void right_vert_cb( const std_msgs::Float32& msg){
@@ -169,8 +134,8 @@ ros::Subscriber<std_msgs::Float32> lh_sub("/controller/left_hori", &left_hori_cb
 ros::Subscriber<std_msgs::Float32> lv_sub("/controller/left_vert", left_vert_cb );
 ros::Subscriber<std_msgs::Float32> rh_sub("/controller/right_hori", &right_hori_cb );
 ros::Subscriber<std_msgs::Float32> rv_sub("/controller/right_vert", &right_vert_cb );
-ros::Subscriber<std_msgs::Float32> up_button_sub("/controller/right_topbumper", &right_upper_bumper_cb);
-ros::Subscriber<std_msgs::Float32> down_button_sub("/controller/right_bottombumper", &right_bottom_bumper_cb);
+ros::Subscriber<std_msgs::Float32> up_button_sub("/controller/right_topbumper", &right_bottom_bumper_cb);
+ros::Subscriber<std_msgs::Float32> down_button_sub("/controller/right_bottombumper", &right_upper_bumper_cb);
 
 // ===================================================
 // ====================== setup ======================
@@ -227,9 +192,9 @@ void loop() {
   nh.spinOnce();
 
   if (rub == 1 && rbb == 0){
-    move_z(1750);
+    move_z(1800);
   } else if (rub == 0 && rbb == 1){
-    move_z(1250);
+    move_z(1200);
   } else {
     move_z(PULSE_OFF);
   }
@@ -244,6 +209,7 @@ void loop() {
 // ===================================================
 // ====================== moving =====================
 // ===================================================
+
 // int powervalue;
 // controller by the verticle left joystick movement
 void move_y(int left_vert) {
@@ -265,29 +231,7 @@ void move_x(float left_hori) {
   motor_rr.writeMicroseconds(left_hori);
   motor_rl.writeMicroseconds(reverse_motor(left_hori));
 }
-//////////// SPLIT /////////////////////////////////
-//////////// SPLIT /////////////////////////////////
 
-void move_fl_rr(int left_vert) {
-  // forward / backwards (positive)
-  // they are all spinning in the same direction
-  
-  motor_fl.writeMicroseconds(left_vert);
-  motor_rr.writeMicroseconds(left_vert);
-}
-
-// horizontal left
-void move_fr_rl(float left_hori) {
-  // motor 2 and 4 need to be reversed --> positive x
-  
-  motor_fr.writeMicroseconds(left_hori);
-  motor_rl.writeMicroseconds(left_hori);
-    
-  //motor_fr.writeMicroseconds(reverse_motor(left_hori));
-  //motor_rl.writeMicroseconds(reverse_motor(left_hori));
-}
-//////////// SPLIT /////////////////////////////////
-//////////// SPLIT /////////////////////////////////
 void move_z(float value) {
 
   // turn 5, 6, 7 in the same direction

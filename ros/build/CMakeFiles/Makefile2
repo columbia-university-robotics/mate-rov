@@ -455,6 +455,24 @@ clean: controller/CMakeFiles/_catkin_empty_exported_target.dir/clean
 .PHONY : clean
 
 #=============================================================================
+# Directory level rules for directory driver
+
+# Convenience name for "all" pass in the directory.
+driver/all:
+
+.PHONY : driver/all
+
+# Convenience name for "clean" pass in the directory.
+driver/clean:
+
+.PHONY : driver/clean
+
+# Convenience name for "preinstall" pass in the directory.
+driver/preinstall:
+
+.PHONY : driver/preinstall
+
+#=============================================================================
 # Directory level rules for directory vision
 
 # Convenience name for "all" pass in the directory.

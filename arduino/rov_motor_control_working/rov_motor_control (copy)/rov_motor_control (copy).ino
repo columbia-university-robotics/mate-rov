@@ -76,17 +76,15 @@ float average_1_4(  ){
 }
 
 void left_hori_cb( const std_msgs::Float32& msg){
-  
   left_hori = mapf(msg.data, POTEN_LOW, POTEN_HIGH, PULSE_WIDTH_LOW, PULSE_WIDTH_HIGH);
   // move_x(left_hori);
   hori = true ;
-/*  
   if (abs(msg.data) >= 0.01) {
     x = true;
   } else {
     x = false;
   }
-
+/*
   if (x == true && y == false && yaw_on == false) {
     move_x(left_hori);
   }
@@ -98,7 +96,7 @@ void left_hori_cb( const std_msgs::Float32& msg){
   }   
   hori = true ;
   if ( hori && vert ) {
-    move_fr_rl( average_1_4() );
+    move_fr_rl( average_1_4( 1 ) );
     hori = false ;
     vert = false ;
   }

@@ -43,6 +43,13 @@
 /home/curc/Workspace/mate-rov/ros/build/controller/CMakeFiles/_catkin_empty_exported_target.dir
 /home/curc/Workspace/mate-rov/ros/build/controller/CMakeFiles/rebuild_cache.dir
 /home/curc/Workspace/mate-rov/ros/build/controller/CMakeFiles/install.dir
+/home/curc/Workspace/mate-rov/ros/build/driver/CMakeFiles/install/strip.dir
+/home/curc/Workspace/mate-rov/ros/build/driver/CMakeFiles/edit_cache.dir
+/home/curc/Workspace/mate-rov/ros/build/driver/CMakeFiles/list_install_components.dir
+/home/curc/Workspace/mate-rov/ros/build/driver/CMakeFiles/test.dir
+/home/curc/Workspace/mate-rov/ros/build/driver/CMakeFiles/install/local.dir
+/home/curc/Workspace/mate-rov/ros/build/driver/CMakeFiles/rebuild_cache.dir
+/home/curc/Workspace/mate-rov/ros/build/driver/CMakeFiles/install.dir
 /home/curc/Workspace/mate-rov/ros/build/vision/CMakeFiles/install/strip.dir
 /home/curc/Workspace/mate-rov/ros/build/vision/CMakeFiles/edit_cache.dir
 /home/curc/Workspace/mate-rov/ros/build/vision/CMakeFiles/list_install_components.dir

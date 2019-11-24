@@ -1,2 +1,2 @@
-controller:vision:zed_wrapper
+controller:driver:vision:zed_wrapper
 -DCATKIN_DEVEL_PREFIX=/home/curc/Workspace/mate-rov/ros/devel -DCMAKE_INSTALL_PREFIX=/home/curc/Workspace/mate-rov/ros/install -G Unix Makefiles
