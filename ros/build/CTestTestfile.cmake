@@ -6,4 +6,6 @@
 # testing this directory and lists subdirectories to be tested as well.
 subdirs("gtest")
 subdirs("controller")
+subdirs("driver")
 subdirs("vision")
+subdirs("zed_wrapper")

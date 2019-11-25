@@ -1,0 +1,8 @@
+prefix=/home/curc/Workspace/mate-rov/ros/devel
+
+Name: zed_wrapper
+Description: Description of zed_wrapper
+Version: 2.6.0
+Cflags: -I/home/curc/Workspace/mate-rov/ros/devel/include
+Libs: -L/home/curc/Workspace/mate-rov/ros/devel/lib 
+Requires: roscpp rosconsole sensor_msgs stereo_msgs image_transport dynamic_reconfigure tf2_ros tf2_geometry_msgs message_runtime
