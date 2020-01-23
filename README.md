@@ -16,6 +16,12 @@ Mono-repository for CURC's [MATE ROV](https://www.marinetech.org/rov-competition
 +-- LICENSE.md
 ```
 
+## The Software Diagram
+
+![](./documentation/images/CURC_MATE_ROV_software_diagram.png)
+
+This repository contains all of the code for the ROS packages and Arduino controllers. 
+
 ## How to Install Locally
 
 PLEASE NOTE: The project only supports Linux machines. Unfortunately you can't run the code on a Mac or Windows without a virtual desktop. 
@@ -83,3 +89,9 @@ Name your remote branch this if you are testing an already-existing feature. The
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+
+## Contact
+
+For any inquiries, questions, comments, or concerns, please contact Neil at neil.nie@columbia.edu. 
+
+For CURC club members and those who would like to join CURC, please reach out and join the Slack channel. 
