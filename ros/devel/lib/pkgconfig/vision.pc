@@ -4,5 +4,5 @@ Name: vision
 Description: Description of vision
 Version: 0.0.0
 Cflags: 
-Libs: -L/home/curc/Workspace/mate-rov/ros/devel/lib 
+Libs: -L${prefix}/lib 
 Requires: 

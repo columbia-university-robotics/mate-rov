@@ -1,6 +1,6 @@
+
 #include <Wire.h>
-#include "I2Cdev.h"
-#include "MPU6050.h"
+
 
 // class default I2C address is 0x68
 

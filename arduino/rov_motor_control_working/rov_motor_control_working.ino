@@ -30,15 +30,27 @@ http://docs.ros.org/jade/api/rosserial_arduino/html/ArduinoHardware_8h_source.ht
 ros::NodeHandle nh;
 #include <Wire.h>
 
+// time related vars and constants
+int time_diff;
+float freq;
+long loop_timer;
+int delay_sec = 1;
+
 // ================= MPU Vars =================
+// class default I2C address is 0x68
+
 float angle_pitch, angle_roll;
-int gyro_x, gyro_y, gyro_z;
-long acc_x, acc_y, acc_z, acc_total_vector;
+int16_t gyro_x, gyro_y, gyro_z;
+int16_t acc_x, acc_y, acc_z, acc_total_vector;
 float angle_roll_acc, angle_pitch_acc;
 float roll_level_adjust, pitch_level_adjust;
 long gyro_x_cal, gyro_y_cal, gyro_z_cal;
 float angle_pitch_output, angle_roll_output;
 boolean set_gyro_angles;
+int temperature;
+
+const float angle_pitch_accel_cal = 0.628178439;
+const float angle_roll_accel_cal = -1.425186567;
 // ============================================
 
 // define all constants
@@ -49,9 +61,10 @@ int MOTOR_PORT_4 = 9;
 int MOTOR_PORT_5 = 8;
 int MOTOR_PORT_6 = 7;
 int MOTOR_PORT_7 = 6;
+int MOTOR_PORT_8 = 5;
 
 int POTEN_LOW = -1;
-int POTEN_HIGH = 1; 
+int POTEN_HIGH = 1;
 int PULSE_WIDTH_LOW = 1100;
 int PULSE_WIDTH_HIGH = 1900; 
 int PULSE_SLOW_OFFSET = 100; // subtract the high by the offset to get a smaller high
@@ -63,7 +76,6 @@ float rbb = 0;
 float rb = 0;
 
 double pos = 0.0;  
-
 bool x, y, yaw_on;
 
 // ==========================================================================
@@ -72,14 +84,20 @@ Servo motor_fl, motor_fr, motor_rr, motor_rl, motor_ru, motor_flu, motor_fru;
 float left_hori, left_vert, right_hori, right_vert;
 // ==========================================================================
 
-std_msgs::Float32 pos_msg;
-ros::Publisher pos_pub("/sensor/vehicle/steering/actuator_position", &pos_msg);
+std_msgs::Float32 debug_msg_1;
+std_msgs::Float32 yaw_msg;
+std_msgs::Float32 pitch_msg;
+std_msgs::Float32 roll_msg;
+ros::Publisher debug_pub_1("/rov/debugging/stream_1", &debug_msg_1);
+ros::Publisher yaw_pub("/rov/sensor/yaw", &yaw_msg);
+ros::Publisher pitch_pub("/rov/sensor/pitch", &pitch_msg);
+ros::Publisher roll_pub("/rov/sensor/roll", &roll_msg);
 
 // ===================================================
 // =============== ROS callback methods ==============
 // ===================================================
 
-void left_hori_cb( const std_msgs::Float32& msg){
+void left_hori_cb(const std_msgs::Float32& msg){
 
   left_hori = mapf(msg.data, POTEN_LOW, POTEN_HIGH, PULSE_WIDTH_LOW, PULSE_WIDTH_HIGH);
 
@@ -157,9 +175,11 @@ void setup() {
   nh.subscribe(up_button_sub);
   nh.subscribe(down_button_sub);
   
-  nh.advertise(pos_pub);
+  nh.advertise(debug_pub_1);
+  nh.advertise(yaw_pub);
+  nh.advertise(pitch_pub);
+  nh.advertise(roll_pub);
 
-  
   // initialize serial communication
   motor_fr.attach(MOTOR_PORT_1);
   motor_fl.attach(MOTOR_PORT_2);
@@ -169,7 +189,6 @@ void setup() {
   motor_flu.attach(MOTOR_PORT_6);
   motor_fru.attach(MOTOR_PORT_7);
 
-  
   motor_fl.writeMicroseconds(PULSE_OFF);
   motor_fr.writeMicroseconds(PULSE_OFF);
   motor_rr.writeMicroseconds(PULSE_OFF);
@@ -177,8 +196,15 @@ void setup() {
   motor_ru.writeMicroseconds(PULSE_OFF);
   motor_flu.writeMicroseconds(PULSE_OFF);
   motor_fru.writeMicroseconds(PULSE_OFF);
+
+  Wire.begin();
+  setup_mpu_6050();
+  delay(500);
+  calibrate_mpu();
   
-  delay(2000);
+  delay(1000);
+
+  loop_timer = micros();
 }
 
 // ===========================================================
@@ -187,15 +213,27 @@ void setup() {
 // the loop routine runs over and over again forever:
 void loop() {
 
+  int tbefore = micros();
+
+  read_mpu_data();
+  calculate_angle();
+ 
   // -----debugging only -----
-  pos = left_vert;
-  pos_msg.data = pos;
-  pos_pub.publish(&pos_msg);
+  //  pos = left_vert;
+  freq = calculate_freq(time_diff);
+  debug_msg_1.data = freq;
+  debug_pub_1.publish(&debug_msg_1);
   // -----debugging only -----
 
-  int delay_sec = 3;
-  nh.spinOnce();
-
+  // ------ publishers ---------
+  yaw_msg.data = 0;
+  pitch_msg.data = angle_pitch;
+  roll_msg.data = angle_roll;
+  yaw_pub.publish(&yaw_msg);
+  pitch_pub.publish(&pitch_msg);
+  roll_pub.publish(&roll_msg);
+  // ---------------------------
+  
   if (rub == 1 && rbb == 0){
     move_z(1800);
   } else if (rub == 0 && rbb == 1){
@@ -208,7 +246,13 @@ void loop() {
     move_y(PULSE_OFF);
   }
 
+  nh.spinOnce();
   delay(delay_sec);        // delay in between reads for stability
+
+  while(micros() - loop_timer < 10000);
+  loop_timer = micros();
+  
+  time_diff = micros() - tbefore;
 }
 
 // ===========================================================
@@ -220,7 +264,6 @@ void loop() {
 void move_y(int left_vert) {
   // forward / backwards (positive)
   // they are all spinning in the same direction
-  
   motor_fl.writeMicroseconds(left_vert);
   motor_fr.writeMicroseconds(left_vert);
   motor_rr.writeMicroseconds(left_vert);
@@ -268,6 +311,13 @@ void roll(float roll) {
   motor_flu.writeMicroseconds(reverse_motor(roll));
 }
 
+// helpers
+
+// the parameter is in milliseconds
+float calculate_freq(int runtime){
+  return 1.0 / (0.000001 * runtime);
+}
+
 float reverse_motor(float in){
   return 1500.0 - (in - 1500.0);
 }
@@ -279,7 +329,6 @@ float mapf(float x, float in_min, float in_max, float out_min, float out_max){
 // ===========================================================
 // =========================== MPU ===========================
 // ===========================================================
-
 void calculate_angle() {
 
   gyro_x -= gyro_x_cal;                                                //Subtract the offset calibration value from the raw gyro_x value
@@ -287,13 +336,16 @@ void calculate_angle() {
   gyro_z -= gyro_z_cal;                                                //Subtract the offset calibration value from the raw gyro_z value
   
   //Gyro angle calculations
+  
   //0.0000611 = 1 / (250Hz / 65.5)
-  angle_pitch += gyro_x * 0.00095419847;                                   //Calculate the traveled pitch angle and add this to the angle_pitch variable
-  angle_roll += gyro_y * 0.00095419847;                                    //Calculate the traveled roll angle and add this to the angle_roll variable
+  float k = 1.0 / freq / 65.5;
+  angle_pitch += gyro_x * k;                                   //Calculate the traveled pitch angle and add this to the angle_pitch variable
+  angle_roll += gyro_y * k;                                    //Calculate the traveled roll angle and add this to the angle_roll variable
   
   //0.000001066 = 0.0000611 * (3.142(PI) / 180degr) The Arduino sin function is in radians
-  angle_pitch += angle_roll * sin(gyro_z * 0.00000719542);               //If the IMU has yawed transfer the roll angle to the pitch angel
-  angle_roll -= angle_pitch * sin(gyro_z * 0.00000719542);               //If the IMU has yawed transfer the pitch angle to the roll angel
+  float c = k * (3.1415926 / 180.0);
+  angle_pitch += angle_roll * sin(gyro_z * c);               //If the IMU has yawed transfer the roll angle to the pitch angel
+  angle_roll -= angle_pitch * sin(gyro_z * c);               //If the IMU has yawed transfer the pitch angle to the roll angel
   
   //Accelerometer angle calculations
   acc_total_vector = sqrt((acc_x*acc_x)+(acc_y*acc_y)+(acc_z*acc_z));  //Calculate the total accelerometer vector
@@ -302,77 +354,74 @@ void calculate_angle() {
   angle_roll_acc = asin((float)acc_x/acc_total_vector)* -57.296;       //Calculate the roll angle
   
   //Place the MPU-6050 spirit level and note the values in the following two lines for calibration
-  angle_pitch_acc -= 0.0;                                              //Accelerometer calibration value for pitch
-  angle_roll_acc -= 0.0;                                               //Accelerometer calibration value for roll
+  angle_pitch_acc -= angle_pitch_accel_cal;                                              //Accelerometer calibration value for pitch
+  angle_roll_acc -= angle_roll_accel_cal;                                               //Accelerometer calibration value for roll
 
   if(set_gyro_angles){                                                 //If the IMU is already started
-    angle_pitch = angle_pitch * 0.9996 + angle_pitch_acc * 0.0004;     //Correct the drift of the gyro pitch angle with the accelerometer pitch angle
-    angle_roll = angle_roll * 0.9996 + angle_roll_acc * 0.0004;        //Correct the drift of the gyro roll angle with the accelerometer roll angle
+    angle_pitch = angle_pitch * 0.9990 + angle_pitch_acc * 0.0010;     //Correct the drift of the gyro pitch angle with the accelerometer pitch angle
+    angle_roll = angle_roll * 0.9990 + angle_roll_acc * 0.0010;        //Correct the drift of the gyro roll angle with the accelerometer roll angle
   }
   else{                                                                //At first start
     angle_pitch = angle_pitch_acc;                                     //Set the gyro pitch angle equal to the accelerometer pitch angle 
     angle_roll = angle_roll_acc;                                       //Set the gyro roll angle equal to the accelerometer roll angle 
     set_gyro_angles = true;                                            //Set the IMU started flag
   }
-  
-  //To dampen the pitch and roll angles a complementary filter is used
-  angle_pitch_output = angle_pitch_output * 0.9 + angle_pitch * 0.1;   //Take 90% of the output pitch value and add 10% of the raw pitch value
-  angle_roll_output = angle_roll_output * 0.9 + angle_roll * 0.1;      //Take 90% of the output roll value and add 10% of the raw roll value
-
 }
 
-void print_mpu_data(){
-
-//  Serial.print("Pitch: ");
-//  Serial.println(angle_pitch_output);
-  Serial.print("Roll: ");
-  Serial.println(angle_roll_output);
-}
-
+//Subroutine for reading the raw gyro and accelerometer data
 void read_mpu_data() {
 
-    //Subroutine for reading the raw gyro and accelerometer data
   Wire.beginTransmission(0x68);                                        //Start communicating with the MPU-6050
   Wire.write(0x3B);                                                    //Send the requested starting register
   Wire.endTransmission();                                              //End the transmission
-  Wire.requestFrom(0x68, 14);                                          //Request 14 bytes from the MPU-6050
-  while (Wire.available() < 14);                                       //Wait until all the bytes are received
-  acc_x = Wire.read() << 8 | Wire.read();
-  acc_y = Wire.read() << 8 | Wire.read();
-  acc_z = Wire.read() << 8 | Wire.read();
-  Wire.read() << 8 | Wire.read();
-  gyro_x = Wire.read() << 8 | Wire.read();
-  gyro_y = Wire.read() << 8 | Wire.read();
-  gyro_z = Wire.read() << 8 | Wire.read();
+  Wire.requestFrom(0x68,14);                                           //Request 14 bytes from the MPU-6050
+  while(Wire.available() < 14);                                        //Wait until all the bytes are received
+  acc_x = Wire.read()<<8|Wire.read();                                  //Add the low and high byte to the acc_x variable
+  acc_y = Wire.read()<<8|Wire.read();                                  //Add the low and high byte to the acc_y variable
+  acc_z = Wire.read()<<8|Wire.read();                                  //Add the low and high byte to the acc_z variable
+  temperature = Wire.read()<<8|Wire.read();                            //Add the low and high byte to the temperature variable
+  gyro_x = Wire.read()<<8|Wire.read();                                 //Add the low and high byte to the gyro_x variable
+  gyro_y = Wire.read()<<8|Wire.read();                                 //Add the low and high byte to the gyro_y variable
+  gyro_z = Wire.read()<<8|Wire.read();                                 //Add the low and high byte to the gyro_z variable
 
   gyro_y = gyro_y * -1;
   gyro_z = gyro_z * -1;
+  
+}
+
+void calibrate_mpu(){
+
+  for (int cal_int = 0; cal_int < 2000 ; cal_int ++){                  //Run this code 2000 times
+    // if(cal_int % 125 == 0) Serial.print(".");                           //Print a dot on the LCD every 125 readings
+    read_mpu_data();                                                   //Read the raw acc and gyro data from the MPU-6050
+    gyro_x_cal += gyro_x;                                              //Add the gyro x-axis offset to the gyro_x_cal variable
+    gyro_y_cal += gyro_y;                                              //Add the gyro y-axis offset to the gyro_y_cal variable
+    gyro_z_cal += gyro_z;                                              //Add the gyro z-axis offset to the gyro_z_cal variable
+    delay(1);                                                          
+  }
+  gyro_x_cal /= 2000;                                                  //Divide the gyro_x_cal variable by 2000 to get the avarage offset
+  gyro_y_cal /= 2000;                                                  //Divide the gyro_y_cal variable by 2000 to get the avarage offset
+  gyro_z_cal /= 2000;                                                 
 }
 
 void setup_mpu_6050() {
 
-  // We want to write to the PWR_MGMT_1 register (6B hex)
-  // Set the register bits as 00000000 to activate the gyro
   Wire.beginTransmission(0x68);
-  Wire.write(0x6B);                                                          
-  Wire.write(0x00);                                                          
+  Wire.write(0x6B);                                                          //We want to write to the PWR_MGMT_1 register (6B hex)
+  Wire.write(0x00);                                                          //Set the register bits as 00000000 to activate the gyro
   Wire.endTransmission();
 
-  // We want to write to the GYRO_CONFIG register (1B hex)
-  // Set the register bits as 00001000 (500dps full scale)
   Wire.beginTransmission(0x68);
-  Wire.write(0x1B);                                                          
-  Wire.write(0x08);                                                          
-  Wire.endTransmission();                                                   
+  Wire.write(0x1B);                                                          //We want to write to the GYRO_CONFIG register (1B hex)
+  Wire.write(0x08);                                                          //Set the register bits as 00001000 (500dps full scale)
+  Wire.endTransmission();                                                    //End the transmission wit
 
-  // We want to write to the ACCEL_CONFIG register (1A hex)
-  // Set the register bits as 00010000 (+/- 8g full scale range)
   Wire.beginTransmission(0x68);
-  Wire.write(0x1C);                                                          
-  Wire.write(0x10);                                                          
+  Wire.write(0x1C);                                                          //We want to write to the ACCEL_CONFIG register (1A hex)
+  Wire.write(0x10);                                                          //Set the register bits as 00010000 (+/- 8g full scale range)
   Wire.endTransmission();
 
-  // Let's perform a random register check to see if the values are written correct
+  //Let's perform a random register check to see if the values are written correct
   Wire.beginTransmission(0x68);
   Wire.write(0x1B);                                                          //Start reading @ register 0x1B
   Wire.endTransmission();                                                    //End the transmission
@@ -380,11 +429,13 @@ void setup_mpu_6050() {
   while (Wire.available() < 1);                                              //Wait until the 6 bytes are received
   if (Wire.read() != 0x08) {                                                 //Check if the value is 0x08
     digitalWrite(12, HIGH);                                                  //Turn on the warning led
-    while (1) delay(10);                                                     //Stay in this loop for ever
+    // Serial.println("Failed");  
+    while (1) digitalWrite(12, HIGH);                                        //Stay in this loop for ever
   }
 
   Wire.beginTransmission(0x68);
   Wire.write(0x1A);                                                          //We want to write to the CONFIG register (1A hex)
   Wire.write(0x03);                                                          //Set the register bits as 00000011 (Set Digital Low Pass Filter to ~43Hz)
   Wire.endTransmission();
+  
 }
