@@ -26,6 +26,7 @@ http://docs.ros.org/jade/api/rosserial_arduino/html/ArduinoHardware_8h_source.ht
 
 #include <Servo.h>
 #include <ros.h>
+#include <std_msgs/Float64.h>
 #include <std_msgs/Float32.h>
 ros::NodeHandle nh;
 #include <Wire.h>
@@ -90,10 +91,10 @@ Servo motor_fl, motor_fr, motor_rr, motor_rl, motor_ru, motor_flu, motor_fru;
 float left_hori, left_vert, right_hori, right_vert;
 // ==========================================================================
 
-std_msgs::Float32 debug_msg_1;
-std_msgs::Float32 yaw_msg;
-std_msgs::Float32 pitch_msg;
-std_msgs::Float32 roll_msg;
+std_msgs::Float64 debug_msg_1;
+std_msgs::Float64 yaw_msg;
+std_msgs::Float64 pitch_msg;
+std_msgs::Float64 roll_msg;
 ros::Publisher debug_pub_1("/rov/debugging/stream_1", &debug_msg_1);
 ros::Publisher yaw_pub("/rov/sensor/yaw", &yaw_msg);
 ros::Publisher pitch_pub("/rov/sensor/pitch", &pitch_msg);
@@ -411,13 +412,13 @@ void read_mpu_data() {
   Wire1.endTransmission();                                              //End the transmission
   Wire1.requestFrom(0x68,14);                                           //Request 14 bytes from the MPU-6050
   while(Wire1.available() < 14);                                        //Wait until all the bytes are received
-  acc_x = Wire1.read()<<8|Wire1.read();                                  //Add the low and high byte to the acc_x variable
-  acc_y = Wire1.read()<<8|Wire1.read();                                  //Add the low and high byte to the acc_y variable
-  acc_z = Wire1.read()<<8|Wire1.read();                                  //Add the low and high byte to the acc_z variable
-  temperature = Wire1.read()<<8|Wire1.read();                            //Add the low and high byte to the temperature variable
-  gyro_x = Wire1.read()<<8|Wire1.read();                                 //Add the low and high byte to the gyro_x variable
-  gyro_y = Wire1.read()<<8|Wire1.read();                                 //Add the low and high byte to the gyro_y variable
-  gyro_z = Wire1.read()<<8|Wire1.read();                                 //Add the low and high byte to the gyro_z variable
+  acc_x = Wire1.read() << 8 | Wire1.read();                                  //Add the low and high byte to the acc_x variable
+  acc_y = Wire1.read() << 8 | Wire1.read();                                  //Add the low and high byte to the acc_y variable
+  acc_z = Wire1.read() << 8 | Wire1.read();                                  //Add the low and high byte to the acc_z variable
+  temperature = Wire1.read() << 8 | Wire1.read();                            //Add the low and high byte to the temperature variable
+  gyro_x = Wire1.read()<<8 | Wire1.read();                                 //Add the low and high byte to the gyro_x variable
+  gyro_y = Wire1.read()<<8 | Wire1.read();                                 //Add the low and high byte to the gyro_y variable
+  gyro_z = Wire1.read()<<8 | Wire1.read();                                 //Add the low and high byte to the gyro_z variable
 
   gyro_y = gyro_y * -1;
   gyro_z = gyro_z * -1;
@@ -428,7 +429,7 @@ void calibrate_mpu(){
 
   lcd.clear();
   lcd.setCursor(0, 0);
-  for (int cal_int = 0; cal_int < 2000 ; cal_int ++){                  //Run this code 2000 times
+  for (int cal_int = 0; cal_int < 2000; cal_int ++){                  //Run this code 2000 times
     if(cal_int % 125 == 0) lcd.print(".");                           //Print a dot on the LCD every 125 readings
     read_mpu_data();                                                   //Read the raw acc and gyro data from the MPU-6050
     gyro_x_cal += gyro_x;                                              //Add the gyro x-axis offset to the gyro_x_cal variable

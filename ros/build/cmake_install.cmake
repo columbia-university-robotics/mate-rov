@@ -131,6 +131,7 @@ endif()
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
   include("/home/curc/Workspace/mate-rov/ros/build/gtest/cmake_install.cmake")
+  include("/home/curc/Workspace/mate-rov/ros/build/rov_pid/cmake_install.cmake")
   include("/home/curc/Workspace/mate-rov/ros/build/controller/cmake_install.cmake")
   include("/home/curc/Workspace/mate-rov/ros/build/driver/cmake_install.cmake")
   include("/home/curc/Workspace/mate-rov/ros/build/vision/cmake_install.cmake")
