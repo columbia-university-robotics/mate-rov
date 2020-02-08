@@ -39,6 +39,8 @@ SCL  -  A5
 #include <LiquidCrystal_I2C.h>
 #include <Wire.h>
 
+extern TwoWire Wire1; // use SCL1 & SDA1
+
 //Declaring some global variables
 int gyro_x, gyro_y, gyro_z;
 long acc_x, acc_y, acc_z, acc_total_vector;
@@ -57,7 +59,8 @@ LiquidCrystal_I2C lcd(0x27,16,2);
 
 
 void setup() {
-  Wire.begin();                                                        //Start I2C as master
+  
+  Wire1.begin();                                                        //Start I2C as master
   //Serial.begin(57600);                                               //Use only for debugging
   pinMode(13, OUTPUT);                                                 //Set output 13 (LED) as output
   
@@ -153,18 +156,18 @@ void loop(){
 
 
 void read_mpu_6050_data(){                                             //Subroutine for reading the raw gyro and accelerometer data
-  Wire.beginTransmission(0x68);                                        //Start communicating with the MPU-6050
-  Wire.write(0x3B);                                                    //Send the requested starting register
-  Wire.endTransmission();                                              //End the transmission
-  Wire.requestFrom(0x68,14);                                           //Request 14 bytes from the MPU-6050
-  while(Wire.available() < 14);                                        //Wait until all the bytes are received
-  acc_x = Wire.read()<<8|Wire.read();                                  //Add the low and high byte to the acc_x variable
-  acc_y = Wire.read()<<8|Wire.read();                                  //Add the low and high byte to the acc_y variable
-  acc_z = Wire.read()<<8|Wire.read();                                  //Add the low and high byte to the acc_z variable
-  temperature = Wire.read()<<8|Wire.read();                            //Add the low and high byte to the temperature variable
-  gyro_x = Wire.read()<<8|Wire.read();                                 //Add the low and high byte to the gyro_x variable
-  gyro_y = Wire.read()<<8|Wire.read();                                 //Add the low and high byte to the gyro_y variable
-  gyro_z = Wire.read()<<8|Wire.read();                                 //Add the low and high byte to the gyro_z variable
+  Wire1.beginTransmission(0x68);                                        //Start communicating with the MPU-6050
+  Wire1.write(0x3B);                                                    //Send the requested starting register
+  Wire1.endTransmission();                                              //End the transmission
+  Wire1.requestFrom(0x68,14);                                           //Request 14 bytes from the MPU-6050
+  while(Wire1.available() < 14);                                        //Wait until all the bytes are received
+  acc_x = Wire1.read()<<8|Wire1.read();                                  //Add the low and high byte to the acc_x variable
+  acc_y = Wire1.read()<<8|Wire1.read();                                  //Add the low and high byte to the acc_y variable
+  acc_z = Wire1.read()<<8|Wire1.read();                                  //Add the low and high byte to the acc_z variable
+  temperature = Wire1.read()<<8|Wire1.read();                            //Add the low and high byte to the temperature variable
+  gyro_x = Wire1.read()<<8|Wire1.read();                                 //Add the low and high byte to the gyro_x variable
+  gyro_y = Wire1.read()<<8|Wire1.read();                                 //Add the low and high byte to the gyro_y variable
+  gyro_z = Wire1.read()<<8|Wire1.read();                                 //Add the low and high byte to the gyro_z variable
 
 }
 
@@ -204,32 +207,18 @@ void write_LCD(){                                                      //Subrout
 
 void setup_mpu_6050_registers(){
   //Activate the MPU-6050
-  Wire.beginTransmission(0x68);                                        //Start communicating with the MPU-6050
-  Wire.write(0x6B);                                                    //Send the requested starting register
-  Wire.write(0x00);                                                    //Set the requested starting register
-  Wire.endTransmission();                                              //End the transmission
+  Wire1.beginTransmission(0x68);                                        //Start communicating with the MPU-6050
+  Wire1.write(0x6B);                                                    //Send the requested starting register
+  Wire1.write(0x00);                                                    //Set the requested starting register
+  Wire1.endTransmission();                                              //End the transmission
   //Configure the accelerometer (+/-8g)
-  Wire.beginTransmission(0x68);                                        //Start communicating with the MPU-6050
-  Wire.write(0x1C);                                                    //Send the requested starting register
-  Wire.write(0x10);                                                    //Set the requested starting register
-  Wire.endTransmission();                                              //End the transmission
+  Wire1.beginTransmission(0x68);                                        //Start communicating with the MPU-6050
+  Wire1.write(0x1C);                                                    //Send the requested starting register
+  Wire1.write(0x10);                                                    //Set the requested starting register
+  Wire1.endTransmission();                                              //End the transmission
   //Configure the gyro (500dps full scale)
-  Wire.beginTransmission(0x68);                                        //Start communicating with the MPU-6050
-  Wire.write(0x1B);                                                    //Send the requested starting register
-  Wire.write(0x08);                                                    //Set the requested starting register
-  Wire.endTransmission();                                              //End the transmission
+  Wire1.beginTransmission(0x68);                                        //Start communicating with the MPU-6050
+  Wire1.write(0x1B);                                                    //Send the requested starting register
+  Wire1.write(0x08);                                                    //Set the requested starting register
+  Wire1.endTransmission();                                              //End the transmission
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
