@@ -56,6 +56,10 @@ float angle_pitch_output, angle_roll_output;
 boolean set_gyro_angles;
 int temperature;
 
+float pid_pitch = 0;
+float pid_roll = 0;
+float pid_yaw = 0;
+
 const float angle_pitch_accel_cal = 0.628178439;
 const float angle_roll_accel_cal = -1.425186567;
 // ============================================
@@ -81,13 +85,14 @@ float MIN_STICK_THRESHOLD = 0.01;
 float rub = 0;
 float rbb = 0;
 float rb = 0;
+int throttle = 1600 ;
 
 double pos = 0.0;  
 bool x, y, yaw_on;
 
 // ==========================================================================
-//    motor 1   motor 2   motor  3  motor 4   motor 7   motor 5    motor  6
-Servo motor_fl, motor_fr, motor_rr, motor_rl, motor_ru, motor_flu, motor_fru;
+//    motor 1   motor 2   motor  3  motor 4   motor 5    motor  6  motor 7   motor  8
+Servo motor_fl, motor_fr, motor_rr, motor_rl, motor_lu, motor_fu , motor_ru, motor_bu;
 float left_hori, left_vert, right_hori, right_vert;
 // ==========================================================================
 
@@ -158,10 +163,25 @@ void right_bottom_bumper_cb(const std_msgs::Float32& msg) {
   rbb = msg.data;
 }
 
+void pid_pitch_cb(const std_msgs::Float64& msg) {
+  pid_pitch = msg.data;
+}
 
-// declare all ROS pub inst. vars. 
+void pid_roll_cb(const std_msgs::Float64& msg) {
+  pid_roll = msg.data;
+}
+
+void pid_yaw_cb(const std_msgs::Float64& msg) {
+  pid_yaw = msg.data;
+}
+
+// declare pid ROS pub inst. vars. 
+ros::Subscriber<std_msgs::Float64> pid_roll_sub("/rov_pid/roll_effort", &pid_roll_cb);
+ros::Subscriber<std_msgs::Float64> pid_pitch_sub("/rov_pid/pitch_effort", &pid_pitch_cb);
+ros::Subscriber<std_msgs::Float64> pid_yaw_sub("/rov_pid/yaw_effort", &pid_yaw_cb);
+
 ros::Subscriber<std_msgs::Float32> lh_sub("/controller/left_hori", &left_hori_cb );
-ros::Subscriber<std_msgs::Float32> lv_sub("/controller/left_vert", left_vert_cb );
+ros::Subscriber<std_msgs::Float32> lv_sub("/controller/left_vert", &left_vert_cb );
 ros::Subscriber<std_msgs::Float32> rh_sub("/controller/right_hori", &right_hori_cb );
 ros::Subscriber<std_msgs::Float32> rv_sub("/controller/right_vert", &right_vert_cb );
 ros::Subscriber<std_msgs::Float32> up_button_sub("/controller/right_topbumper", &right_bottom_bumper_cb);
@@ -185,7 +205,7 @@ void setup() {
   lcd.setCursor(0, 1);
   lcd.print("V1.0");
   
-  delay(2000);
+  delay(1000);
 
   lcd.clear();
 
@@ -197,6 +217,10 @@ void setup() {
   nh.subscribe(rv_sub);
   nh.subscribe(up_button_sub);
   nh.subscribe(down_button_sub);
+  nh.subscribe(pid_pitch_sub);
+  nh.subscribe(pid_roll_sub);
+  
+  //nh.subscribe(pid_yaw_sub);
   
   nh.advertise(debug_pub_1);
   nh.advertise(yaw_pub);
@@ -208,24 +232,24 @@ void setup() {
   motor_fl.attach(MOTOR_PORT_2);
   motor_rr.attach(MOTOR_PORT_3);
   motor_rl.attach(MOTOR_PORT_4);
-  motor_ru.attach(MOTOR_PORT_5);
-  motor_flu.attach(MOTOR_PORT_6);
-  motor_fru.attach(MOTOR_PORT_7);
-
+  motor_lu.attach(MOTOR_PORT_5);
+  motor_fu.attach(MOTOR_PORT_6);
+  motor_ru.attach(MOTOR_PORT_7);
+  motor_bu.attach(MOTOR_PORT_8);
+  
   motor_fl.writeMicroseconds(PULSE_OFF);
   motor_fr.writeMicroseconds(PULSE_OFF);
   motor_rr.writeMicroseconds(PULSE_OFF);
   motor_rl.writeMicroseconds(PULSE_OFF);
+  motor_lu.writeMicroseconds(PULSE_OFF);
+  motor_fu.writeMicroseconds(PULSE_OFF);
   motor_ru.writeMicroseconds(PULSE_OFF);
-  motor_flu.writeMicroseconds(PULSE_OFF);
-  motor_fru.writeMicroseconds(PULSE_OFF);
+  motor_bu.writeMicroseconds(PULSE_OFF);
 
   Wire1.begin();
   setup_mpu_6050();
   delay(500);
-  calibrate_mpu();
-
-  delay(500);
+  // calibrate_mpu();
 
   lcd.setCursor(0,0);                                                  //Set the LCD cursor to position to position 0,0
   lcd.print("Pitch:");                                                 //Print text to screen
@@ -264,7 +288,14 @@ void loop() {
   pitch_pub.publish(&pitch_msg);
   roll_pub.publish(&roll_msg);
   // ---------------------------
-  
+
+  motor_lu.writeMicroseconds( throttle + pid_pitch + pid_roll + pid_yaw );  
+  motor_bu.writeMicroseconds( throttle + pid_pitch + pid_roll + pid_yaw );
+  motor_ru.writeMicroseconds( throttle + pid_pitch + pid_roll + pid_yaw );
+  motor_bu.writeMicroseconds( throttle + pid_pitch + pid_roll + pid_yaw );
+
+
+  /*
   if (rub == 1 && rbb == 0){
     move_z(1800);
   } else if (rub == 0 && rbb == 1){
@@ -272,7 +303,7 @@ void loop() {
   } else {
     move_z(PULSE_OFF);
   }
-
+  */
   if (!x && !y && !yaw_on) {
     move_y(PULSE_OFF);
   }
@@ -314,9 +345,9 @@ void move_x(float left_hori) {
 
 void move_z(float v) {
   // turn 5, 6, 7 in the same direction
+  motor_bu.writeMicroseconds(v);
   motor_ru.writeMicroseconds(v);
-  motor_fru.writeMicroseconds(v);
-  motor_flu.writeMicroseconds(v);
+  motor_lu.writeMicroseconds(v);
 }
 
 void yaw(float yaw) {
@@ -332,16 +363,16 @@ void yaw(float yaw) {
 void pitch(float pitch) {
   // 7 is the opposite of 5, 6. 
   // we define positive pitch as raising the head of the robot
-  motor_ru.writeMicroseconds(reverse_motor(pitch));
-  motor_fru.writeMicroseconds(pitch);
-  motor_flu.writeMicroseconds(pitch);
+  motor_bu.writeMicroseconds(reverse_motor(pitch));
+  motor_ru.writeMicroseconds(pitch);
+  motor_lu.writeMicroseconds(pitch);
 }
 
 void roll(float roll) {
   // positive roll is counterclockwise viewed from -y. 
   // opposite 5 and 6. 
-  motor_fru.writeMicroseconds(roll);
-  motor_flu.writeMicroseconds(reverse_motor(roll));
+  motor_ru.writeMicroseconds(roll);
+  motor_lu.writeMicroseconds(reverse_motor(roll));
 }
 
 // helpers
@@ -479,13 +510,15 @@ void setup_mpu_6050() {
 }
 
 //
-void write_LCD(){                                                      //Subroutine for writing the LCD
+void write_LCD(){       
+  
+  //Subroutine for writing the LCD
   //To get a 250Hz program loop (4us) it's only possible to write one character per loop
   //Writing multiple characters is taking to much time
   if(lcd_loop_counter == 14)lcd_loop_counter = 0;                      //Reset the counter after 14 characters
   lcd_loop_counter ++;                                                 //Increase the counter
   if(lcd_loop_counter == 1){
-    angle_pitch_buffer = angle_pitch_output * 10;                      //Buffer the pitch angle because it will change
+    angle_pitch_buffer = throttle + pid_roll + pid_pitch + pid_yaw * 10;                      //Buffer the pitch angle because it will change
     lcd.setCursor(6,0);                                                //Set the LCD cursor to position to position 0,0
   }
   if(lcd_loop_counter == 2){
@@ -499,7 +532,7 @@ void write_LCD(){                                                      //Subrout
   if(lcd_loop_counter == 7)lcd.print(abs(angle_pitch_buffer)%10);      //Print decimal number
 
   if(lcd_loop_counter == 8){
-    angle_roll_buffer = angle_roll_output * 10;
+    angle_roll_buffer = throttle + pid_roll + pid_pitch + pid_yaw * 10;
     lcd.setCursor(6,1);
   }
   if(lcd_loop_counter == 9){
