@@ -5,9 +5,10 @@
     	<param name="port" value="/dev/ttyACM0" />
     </node>
 
-    <!-- start joystick 
+    <!-- start joystick -->
     <node name="controller_node" pkg="controller" type="controller_class.py">
 
-    </node>-->
-
+    </node>
+    <include file="$(find rov_pid)/launch/rov_pid.launch" />
+	
 </launch>
