@@ -1,17 +1,19 @@
+#!/usr/bin/env python
+
 import rospy
-from geometry_msgs import Quaternion
+from geometry_msgs.msg import Quaternion
 from std_msgs.msg import Float64
 import math
 
-class QuaternionConverter():
-  def init(self):
+class QuaternionConverter:
+  def __init__(self):
     self.pitch = 0
     self.roll = 0
     self.yaw = 0
 
-    rospy.Subscriber("/rov/sensor/yaw", Float64, yaw_update)
-    rospy.Subscriber("/rov/sensor/roll", Float64, roll_update)
-    rospy.Subscriber("/rov/sensor/pitch", Float64, pitch_update)
+    rospy.Subscriber("/rov/sensor/yaw", Float64, self.yaw_update)
+    rospy.Subscriber("/rov/sensor/roll", Float64, self.roll_update)
+    rospy.Subscriber("/rov/sensor/pitch", Float64, self.pitch_update)
 
     converter_pub = rospy.Publisher('/quaternion', Quaternion, queue_size=5)
 
@@ -48,9 +50,6 @@ class QuaternionConverter():
 
   def pitch_update(self, data):
     self.pitch = data.data
-
-
-
 
 
 

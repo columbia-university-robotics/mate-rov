@@ -518,7 +518,7 @@ void write_LCD(){
   if(lcd_loop_counter == 14)lcd_loop_counter = 0;                      //Reset the counter after 14 characters
   lcd_loop_counter ++;                                                 //Increase the counter
   if(lcd_loop_counter == 1){
-    angle_pitch_buffer = throttle + pid_roll + pid_pitch + pid_yaw * 10;                      //Buffer the pitch angle because it will change
+    angle_pitch_buffer = throttle + pid_roll + pid_pitch + pid_yaw * 100;                      //Buffer the pitch angle because it will change
     lcd.setCursor(6,0);                                                //Set the LCD cursor to position to position 0,0
   }
   if(lcd_loop_counter == 2){
@@ -532,7 +532,7 @@ void write_LCD(){
   if(lcd_loop_counter == 7)lcd.print(abs(angle_pitch_buffer)%10);      //Print decimal number
 
   if(lcd_loop_counter == 8){
-    angle_roll_buffer = throttle + pid_roll + pid_pitch + pid_yaw * 10;
+    angle_roll_buffer = throttle + pid_roll + pid_pitch + pid_yaw * 100;
     lcd.setCursor(6,1);
   }
   if(lcd_loop_counter == 9){
