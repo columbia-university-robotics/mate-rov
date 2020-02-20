@@ -290,7 +290,7 @@ void loop() {
   // ---------------------------
 
   motor_lu.writeMicroseconds( throttle + pid_pitch + pid_roll + pid_yaw );  
-  motor_bu.writeMicroseconds( throttle + pid_pitch + pid_roll + pid_yaw );
+  motor_fu.writeMicroseconds( throttle + pid_pitch + pid_roll + pid_yaw );
   motor_ru.writeMicroseconds( throttle + pid_pitch + pid_roll + pid_yaw );
   motor_bu.writeMicroseconds( throttle + pid_pitch + pid_roll + pid_yaw );
 
