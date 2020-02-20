@@ -1,23 +1,34 @@
 #!/usr/bin/env python
 
 import rospy
-from geometry_msgs.msg import Quaternion
-from std_msgs.msg import Float64
+from geometry_msgs.msg import Quaternion, Point, Pose, PoseStamped
+from std_msgs.msg import Float64, Header
 import math
 
-class QuaternionConverter:
+class PoseConverter:
   def __init__(self):
     self.pitch = 0
     self.roll = 0
     self.yaw = 0
+    p = Point(x = 0, y = 0, z = 0)
+    q = Quaternion()
+    
+    pose = Pose()
+    pose.position = p
+    
+    h = Header()
+    h.frame_id = "map"
+    ps = PoseStamped()
+    ps.pose = pose
+    ps.header = h
 
     rospy.Subscriber("/rov/sensor/yaw", Float64, self.yaw_update)
     rospy.Subscriber("/rov/sensor/roll", Float64, self.roll_update)
     rospy.Subscriber("/rov/sensor/pitch", Float64, self.pitch_update)
 
-    converter_pub = rospy.Publisher('/quaternion', Quaternion, queue_size=5)
+    converter_pub = rospy.Publisher('/poseStamped', PoseStamped, queue_size=5)
 
-    rospy.init_node('quaternion_converter', anonymous = True) #anonymous = True simply makes sure the node name is unique
+    rospy.init_node('pose_converter', anonymous = True) #anonymous = True simply makes sure the node name is unique
 
     r = rospy.Rate(30)
 
@@ -31,14 +42,15 @@ class QuaternionConverter:
       cr = math.cos(self.roll * 0.5);
       sr = math.sin(self.roll * 0.5);
 
-      q = Quaternion()
+      
 
       q.w = cy * cp * cr + sy * sp * sr;
       q.x = cy * cp * sr - sy * sp * cr;
       q.y = sy * cp * sr + cy * sp * cr;
       q.z = sy * cp * cr - cy * sp * sr;
+      pose.orientation = q
 
-      converter_pub.publish(q)
+      converter_pub.publish(ps)
       r.sleep()
 
 
@@ -57,6 +69,6 @@ class QuaternionConverter:
 
 if __name__ == '__main__':
   try:
-    QuaternionConverter()
+    PoseConverter()
   except rospy.ROSInterruptException:
     pass

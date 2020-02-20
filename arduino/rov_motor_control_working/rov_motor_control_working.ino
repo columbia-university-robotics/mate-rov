@@ -294,7 +294,6 @@ void loop() {
   motor_ru.writeMicroseconds( throttle + pid_pitch + pid_roll + pid_yaw );
   motor_bu.writeMicroseconds( throttle + pid_pitch + pid_roll + pid_yaw );
 
-
   /*
   if (rub == 1 && rbb == 0){
     move_z(1800);
