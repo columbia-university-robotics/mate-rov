@@ -289,10 +289,12 @@ void loop() {
   roll_pub.publish(&roll_msg);
   // ---------------------------
 
-  motor_lu.writeMicroseconds( throttle + pid_pitch + pid_roll + pid_yaw );  
-  motor_fu.writeMicroseconds( throttle + pid_pitch + pid_roll + pid_yaw );
-  motor_ru.writeMicroseconds( throttle + pid_pitch + pid_roll + pid_yaw );
-  motor_bu.writeMicroseconds( throttle + pid_pitch + pid_roll + pid_yaw );
+
+  motor_lu.writeMicroseconds( throttle - pid_pitch - pid_roll + pid_yaw );  
+  motor_fu.writeMicroseconds( throttle - pid_pitch + pid_roll + pid_yaw );
+  motor_ru.writeMicroseconds( throttle - pid_pitch - pid_roll + pid_yaw );
+  motor_bu.writeMicroseconds( throttle + pid_pitch - pid_roll + pid_yaw );
+
 
   /*
   if (rub == 1 && rbb == 0){
@@ -345,6 +347,7 @@ void move_x(float left_hori) {
 void move_z(float v) {
   // turn 5, 6, 7 in the same direction
   motor_bu.writeMicroseconds(v);
+  motor_fu.writeMicroseconds(v);
   motor_ru.writeMicroseconds(v);
   motor_lu.writeMicroseconds(v);
 }
@@ -363,8 +366,7 @@ void pitch(float pitch) {
   // 7 is the opposite of 5, 6. 
   // we define positive pitch as raising the head of the robot
   motor_bu.writeMicroseconds(reverse_motor(pitch));
-  motor_ru.writeMicroseconds(pitch);
-  motor_lu.writeMicroseconds(pitch);
+  motor_fu.writeMicroseconds(pitch);
 }
 
 void roll(float roll) {
@@ -388,6 +390,7 @@ float reverse_motor(float in){
 float mapf(float x, float in_min, float in_max, float out_min, float out_max){
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
+
 
 // ===========================================================
 // =========================== MPU ===========================
