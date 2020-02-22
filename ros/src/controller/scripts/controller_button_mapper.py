@@ -46,7 +46,7 @@ class TextPrint(object):
 pygame.init()
 
 # Set the width and height of the screen (width, height).
-screen = pygame.display.set_mode((500, 900))
+screen = pygame.display.set_mode((500, 1000))
 
 pygame.display.set_caption("My Game")
 

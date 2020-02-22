@@ -18,54 +18,80 @@ class Controller(object):
 
         # http://wiki.ros.org/msg   #    Float32
 
+	#publishing for rov:
         rospy.init_node('controller')
-        left_vert_pub = rospy.Publisher('controller/left_vert',
+        rov_left_vert_pub = rospy.Publisher('controller/rov/left_vert',
                 Float32, queue_size=10)
-        left_hori_pub = rospy.Publisher('controller/left_hori',
+        rov_left_hori_pub = rospy.Publisher('controller/rov/left_hori',
                 Float32, queue_size=10)
-        right_vert_pub = rospy.Publisher('controller/right_vert',
+        rov_right_vert_pub = rospy.Publisher('controller/rov/right_vert',
                 Float32, queue_size=10)
-        right_hori_pub = rospy.Publisher('controller/right_hori',
+        rov_right_hori_pub = rospy.Publisher('controller/rov/right_hori',
                 Float32, queue_size=10)
-        right_topbumper_pub = \
-            rospy.Publisher('controller/right_topbumper', Float32,
+        rov_right_topbumper_pub = \
+            rospy.Publisher('controller/rov/right_topbumper', Float32,
                             queue_size=10)
-        right_botbumper_pub = \
-            rospy.Publisher('controller/right_bottombumper', Float32,
+        rov_right_botbumper_pub = \
+            rospy.Publisher('controller/rov/right_bottombumper', Float32,
+                            queue_size=10)
+
+	#publishing for the claw:
+        claw_left_vert_pub = rospy.Publisher('controller/claw/left_vert',
+                Float32, queue_size=10)
+        claw_left_hori_pub = rospy.Publisher('controller/claw/left_hori',
+                Float32, queue_size=10)
+        claw_right_vert_pub = rospy.Publisher('controller/claw/right_vert',
+                Float32, queue_size=10)
+        claw_right_hori_pub = rospy.Publisher('controller/claw/right_hori',
+                Float32, queue_size=10)
+        claw_right_topbumper_pub = \
+            rospy.Publisher('controller/claw/right_topbumper', Float32,
+                            queue_size=10)
+        claw_right_botbumper_pub = \
+            rospy.Publisher('controller/claw/right_bottombumper', Float32,
                             queue_size=10)
         r = rospy.Rate(10)  # 10hz
         while not rospy.is_shutdown():
             self.lastActions = self.actions
-            action_dict = self.get_actions()
+            action_dict = self.get_actions()	#controller_0 is rov; controller_1 is claw
             for (k, v) in action_dict.items():
                 if 'joystick' in k:
 
                                     # publish necessary joystick values
 
-                    print k
+                    # print k
                     if 'left' in k:
                         print 'IN LEFT '
                         if 'vertical' in k:  # and self.hasChanged("JLV") ):
 
                                             # print( "IN JLV ")
+			    if 'controller_0' in k:
+                                rov_left_vert_pub.publish(v)
+			    elif 'controller_1' in k:
+				claw_left_vert_pub.publish(v)
 
-                            left_vert_pub.publish(v)
                         elif 'horizontal' in k:
 
                                              # and self.hasChanged("JLH") ):
-
-                            left_hori_pub.publish(v)
+			    if 'controller_0' in k:
+                                rov_left_hori_pub.publish(v)
+			    elif 'controller_1' in k:
+                                claw_left_hori_pub.publish(v)
                     elif 'right' in k:
                         if 'vertical' in k:  # and self.hasChanged("JRV") ):
 
                                             # print( "IN JRV ")
-
-                            right_vert_pub.publish(v)
+			    if 'controller_0' in k:
+                                rov_right_vert_pub.publish(v)
+			    elif 'controller_1' in k:
+                                claw_right_vert_pub.publish(v)
                         elif 'horizontal' in k:
 
                                              # and self.hasChanged("JRH") ):
-
-                            right_hori_pub.publish(v)
+			    if 'controller_0' in k:
+                                rov_right_hori_pub.publish(v)
+			    elif 'controller_1' in k:
+                                claw_right_hori_pub.publish(v)
                 if 'button' in k:
 
                                 # publish necessary button values
@@ -73,13 +99,17 @@ class Controller(object):
                     if 5 in k:  # and self.hasChanged("B5") ):
 
                                     # print( "IN B5 ")
-
-                        right_topbumper_pub.publish(v)
+			if 'controller_0' in k:
+                            rov_right_topbumper_pub.publish(v)
+			elif 'controller_1' in k:
+                            claw_right_topbumper_pub.publish(v)
                     elif 7 in k:
 
                               # and self.hasChanged("B7") ):
-
-                        right_botbumper_pub.publish(v)
+			if 'controller_0' in k:
+                            rov_right_botbumper_pub.publish(v)
+			elif 'controller_1' in k:
+                            claw_right_botbumper_pub.publish(v)
                 if 'arrow' in k:
 
                                     # publish necessary arrow values
@@ -148,13 +178,13 @@ class Controller(object):
                     # print("Joystick button released.")
 
                 pass
-        for count in range(self.joystick_count):
+        
 
+        for count in range(self.joystick_count):
+            
             joystick = pygame.joystick.Joystick(count)
             joystick.init()
-
-                    # Get the name from the OS for the controller/joystick.
-
+            print("****************************",joystick.get_name(),"ID : ", joystick.get_id())
             name = joystick.get_name()
 
                     # Usually axis run in pairs, up/down for one, and left/right for
@@ -169,7 +199,7 @@ class Controller(object):
                         #     LEFT  RIGHT
                         #     -1     1
 
-                    self.actions[('joystick', 'left', 'horizontal')] = \
+                    self.actions[('controller_' + str(count), 'joystick', 'left', 'horizontal')] = \
                         round(axis_value, 4)
                 if i == 1:
 
@@ -177,7 +207,7 @@ class Controller(object):
                         #     UP     DOWN
                         #     -1     1
 
-                    self.actions[('joystick', 'left', 'vertical')] = \
+                    self.actions[('controller_' + str(count), 'joystick', 'left', 'vertical')] = \
                         round(axis_value, 4)
                 if i == 2:
 
@@ -185,7 +215,7 @@ class Controller(object):
                         #     LEFT  RIGHT
                         #     -1     1
 
-                    self.actions[('joystick', 'right', 'horizontal')] = \
+                    self.actions[('controller_' + str(count), 'joystick', 'right', 'horizontal')] = \
                         round(axis_value, 4)
                 if i == 3:
 
@@ -193,12 +223,12 @@ class Controller(object):
                         #     UP     DOWN
                         #     -1     1
 
-                    self.actions[('joystick', 'right', 'vertical')] = \
+                    self.actions[('controller_' + str(count), 'joystick', 'right', 'vertical')] = \
                         round(axis_value, 4)
             buttons = joystick.get_numbuttons()
             for i in range(buttons):
                 button_value = joystick.get_button(i)
-                self.actions[('button', i)] = button_value
+                self.actions[('controller_' + str(count), 'button', i)] = button_value
             hats = joystick.get_numhats()
 
                     # Hat position. All or nothing for direction, not a float like
@@ -206,8 +236,9 @@ class Controller(object):
 
             for i in range(hats):
                 hat_value = joystick.get_hat(i)
-                self.actions[('arrow', i)] = hat_value
-            return self.actions
+                self.actions[('controller_' + str(count), 'arrow', i)] = hat_value
+            
+        return self.actions
 
 
 if __name__ == '__main__':
