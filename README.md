@@ -4,15 +4,48 @@ Mono-repository for CURC's [MATE ROV](https://www.marinetech.org/rov-competition
 
 ## Project Structure
 ```
-TBD :)
+.
++-- arduino
+|   +-- rov_motor_control
+|   +-- rov_motor_control_working
++-- ros
+|   +-- build
+|   +-- devel
+|   +-- src
++-- README.md
++-- LICENSE.md
 ```
 
+## The Software Diagram
+
+![](./documentation/images/CURC_MATE_ROV_software_diagram.png)
+
+This repository contains all of the code for the ROS packages and Arduino controllers. 
+
 ## How to Install Locally
+
+PLEASE NOTE: The project only supports Linux machines. Unfortunately you can't run the code on a Mac or Windows without a virtual desktop. 
+
+To install and run the code locally, you need to first install Robot Operating System (ROS). There are multiple ROS distributions, we recommend you using ROS Melodic Morenia. Here is a very brief guide. For more details please refer to [ROS's official website](http://wiki.ros.org/melodic/Installation). 
+
+1. Set up your sources.list: `sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'`
+2. Set up your keys: `sudo apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654`
+3. `sudo apt update`
+4. Install: `sudo apt install ros-melodic-desktop-full`
+5. Initialize rosdep: `sudo rosdep init` and `rosdep update`
+
+Now, you are ready to clone the repo and run the code. 
+
 1. `git clone`
-2. TBD...
 
 ## Running/Testing
-1. TBD...
+To compile and run the project:
+
+1. `cd ros`
+2. `catkin_make`
+3.	`source devel/setup.bash`
+4. 	`roslaunch driver rov.launch`
+
 
 ## Contributing
 To contribute code to this repository, you must:
@@ -56,3 +89,9 @@ Name your remote branch this if you are testing an already-existing feature. The
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+
+## Contact
+
+For any inquiries, questions, comments, or concerns, please contact Neil at neil.nie@columbia.edu. 
+
+For CURC club members and those who would like to join CURC, please reach out and join the Slack channel. 
