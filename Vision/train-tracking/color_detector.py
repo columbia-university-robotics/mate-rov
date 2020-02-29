@@ -10,6 +10,7 @@ https://github.com/columbia-university-robotics/mate-rov/blob/Vision/Vision/moti
 import time
 import os
 import collections
+import argparse
 
 import numpy as np
 import cv2
@@ -124,16 +125,17 @@ def track_centroid(p_mask, p_frame):
     center_mask = None
 
     M = cv2.moments(p_mask)
-    center_mask = (int(M["m10"] / M["m00"]),
-        int(M["m01"] / M["m00"]))
-    center_x = center_mask[0]
-    center_y = center_mask[1]
-    com = f"COM: ({center_x}, {center_y})" #center of mass
-    print_text(p_mask, p_frame, com, location, color)
+    if M["m00"] is not 0:
+        center_mask = (int(M["m10"] / M["m00"]),
+            int(M["m01"] / M["m00"]))
+        center_x = center_mask[0]
+        center_y = center_mask[1]
+        com = f"COM: ({center_x}, {center_y})" #center of mass
+        print_text(p_mask, p_frame, com, location, color)
 
-    pts.appendleft(center_mask)
-    
-    draw_lines(p_frame, p_mask, pts, color)
+        pts.appendleft(center_mask)
+        
+        draw_lines(p_frame, p_mask, pts, color)
 
 def draw_rectangles(p_mask, p_frame):
     color = (180,255,255)
@@ -163,6 +165,8 @@ def draw_rectangles(p_mask, p_frame):
             cv2.drawContours(p_frame, [box], 0, color, 2)
             cv2.drawContours(p_mask, [box], 0, color, 2)
 
+def draw_circles(p_mask, p_frame):
+    pass
 
 #checks that fist is shown and
 #that it meets location requirements
@@ -505,68 +509,65 @@ def state_controller(mask, fg_mask, dict):
 def begin_control(mask, fg_mask, dict):
     dict["PERSISTENT_CYCLES"] += 1
 
-#WEBCAM: Logitech C270 Parameters
-CAM_fov = 60
-CAM_w = 640 #initially 1280
-CAM_h = 480 #initially 720
-
-#empirically determined hsv skin color range:
-#hue: 0-50
-#sat: .25-.65 (64-166)
-#val: 100-
-setting = {'hue_min':0, 'hue_max': 165, 'sat_min': 200, 'sat_max': 255, 'val_min': 145, 'val_max': 235}
-lower = np.array([setting['hue_min'], setting['sat_min'], setting['val_min']])
-upper = np.array([setting['hue_max'], setting['sat_max'], setting['val_max']])
-
-w_name = 'webcam'
-cv2.namedWindow(w_name)
-cv2.namedWindow('track')
-cv2.namedWindow('hsv')
-
-#live-adjust HSV threshold values
-cv2.createTrackbar('h_min', 'track', setting['hue_min'], 180, nothing)
-cv2.createTrackbar('s_min', 'track', setting['sat_min'], 255, nothing)
-cv2.createTrackbar('v_min', 'track', setting['val_min'], 255, nothing)
-
-cv2.createTrackbar('h_max', 'track', setting['hue_max'], 180, nothing)
-cv2.createTrackbar('s_max', 'track', setting['sat_max'], 255, nothing)
-cv2.createTrackbar('v_max', 'track', setting['val_max'], 255, nothing)
-
 if __name__ == "__main__":
-    vs = cv2.VideoCapture(0)
-    
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-v", "--video",
+        help="path to optional video file")
+    ap.add_argument("-b", "--buffer", type=int, default=64,
+	    help="max buffer size")
+    args = vars(ap.parse_args())
+
+    #WEBCAM: Logitech C270 Parameters
+    CAM_fov = 60
+    CAM_w = 640 #initially 1280
+    CAM_h = 480 #initially 720
+
+    if not args.get("video", False):
+        vs = cv2.VideoCapture(0)
+        #vs.set(cv2.CAP_PROP_FRAME_WIDTH, CAM_w)
+        #vs.set(cv2.CAP_PROP_FRAME_HEIGHT, CAM_h)
+    else:
+        vs = cv2.VideoCapture(args["video"])
+        print(args)
+
     if vs.isOpened(): #test if frame opens
         rval, frame = vs.read()
     else:
         rval = False
-    #background subtraction before image processing
-    
-    #this worked too well
-    #back_sub = cv2.createBackgroundSubtractorMOG2()
-    #reference = frame
+
+
+    #empirically determined hsv skin color range:
+    setting = {'hue_min':105, 'sat_min': 155, 'val_min': 140, 'hue_max': 180, 'sat_max': 230, 'val_max': 218}
+    setting['hue_min'] = 45
+    setting['sat_min'] = 157
+    setting['val_min'] = 233
+    setting['hue_max'] = 65
+    setting['sat_max'] = 190
+    setting['val_max'] = 255
+
+    lower = np.array([setting['hue_min'], setting['sat_min'], setting['val_min']])
+    upper = np.array([setting['hue_max'], setting['sat_max'], setting['val_max']])
+
+    w_name = 'train'
+    cv2.namedWindow(w_name)
+    cv2.namedWindow('track')
+    cv2.namedWindow('hsv')
+
+    #live-adjust HSV threshold values
+    cv2.createTrackbar('h_min', 'track', setting['hue_min'], 180, nothing)
+    cv2.createTrackbar('s_min', 'track', setting['sat_min'], 255, nothing)
+    cv2.createTrackbar('v_min', 'track', setting['val_min'], 255, nothing)
+
+    cv2.createTrackbar('h_max', 'track', setting['hue_max'], 180, nothing)
+    cv2.createTrackbar('s_max', 'track', setting['sat_max'], 255, nothing)
+    cv2.createTrackbar('v_max', 'track', setting['val_max'], 255, nothing)
 
     #instantiate lists which hold centroids 
     pts = collections.deque(maxlen=10)
     pts_five = collections.deque(maxlen=10)
     pts_fist = collections.deque(maxlen=10)
 
-    frame_rate = 10
-    prev = 0
-
-    
-    #states
-
-
-    #state values
-    TEMPORARY_CYCLES  = 0    #one cycle every 0.1 seconds, for user to stash times in
-    PERSISTENT_CYCLES = 0    #one cycle every 0.1 seconds 
-    CYCLES_FIST       = 0    #one cycle every 0.1 seconds, resets with each new state
-    CYCLES_FIVE       = 0    #one cycle every 0.1 seconds, resets with each new state
-    COUNT_FIST        = 0
-    COUNT_FIVE        = 0
-    AVG_FIST          = None
-    AVG_FIVE          = None
-
+    #state values for COMS 4735 Assignment 1
     state_dict = {"CURRENT_STATE": None, 
                 "CHECKING_FIST": None, 
                 "CHECKING_FIVE": None, 
@@ -581,14 +582,38 @@ if __name__ == "__main__":
                 "AVG_FIST": 0, 
                 "AVG_FIVE": 0}
 
+    #state initialization
     state_dict["CURRENT_STATE"] = "CHECKING_FIST"
     state_dict["CHECKING_FIST"] = True
     state_dict["UNLOCKED"] = False
     state_dict["Buffer"] = False
 
+    #pause/play/loop state controls
+    IS_PAUSED = False
+    temp_frame = None
+    frame_count = 0
+
+    #fps controls
+    frame_rate = 10
+    prev = 0
+
     while rval: 
         time_elapsed = time.time() - prev
-        rval, frame = vs.read()
+        if IS_PAUSED:
+            frame = temp_frame
+        else:
+            rval, frame = vs.read()
+            temp_frame = frame
+            frame_count += 1
+
+        print(vs.get(cv2.CAP_PROP_FRAME_COUNT))
+        print(args.get("video", False))
+
+        scale_percent = 25
+        width = int(frame.shape[1] * scale_percent / 100)
+        height = int(frame.shape[0] * scale_percent / 100)
+        dim = (width, height)
+        frame = cv2.resize(frame, dim, interpolation = cv2.INTER_AREA)
 
         #frame rate hack to reduce bandwidth load, running 4 screens
         #all with significant image processing, not very resource-friendly
@@ -597,28 +622,28 @@ if __name__ == "__main__":
 
             #shows unfiltered frame
             refresh_color(lower, upper, frame)
-            cv2.resizeWindow('track', 640,480)
             cv2.imshow('track', frame)
 
             fg_mask = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
             mask = process(fg_mask) #equivalently, the "isSkin() method"
             
-            track_centroid(mask, fg_mask)
+            #track_centroid(mask, fg_mask)
             draw_rectangles(mask, fg_mask)
             #not needed for 2/22 pool test
             #begin_control(mask, fg_mask, state_dict)
             #state_controller(mask, fg_mask, state_dict)            
 
-            
             #show process, detected name
-            cv2.resizeWindow(w_name, 640,480)
             cv2.imshow(w_name, mask)
-            cv2.resizeWindow('hsv', 640,480)
             cv2.imshow('hsv', fg_mask)
 
-        key_press = cv2.waitKey(27)
+        key_press = cv2.waitKey(1)
         if key_press == 27: #escape key
             break
+        elif key_press == ord('p') and not IS_PAUSED:
+            IS_PAUSED = True
+        elif key_press == ord('p') and IS_PAUSED:
+            IS_PAUSED = False
 
     cv2.destroyWindow(w_name)
     vs.release()
