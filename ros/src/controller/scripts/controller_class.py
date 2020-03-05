@@ -18,7 +18,7 @@ class Controller(object):
 
         # http://wiki.ros.org/msg   #    Float32
 
-	#publishing for rov:
+	#publishing for the rov:
         rospy.init_node('controller')
         rov_left_vert_pub = rospy.Publisher('controller/rov/left_vert',
                 Float32, queue_size=10)
