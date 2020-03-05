@@ -14,7 +14,7 @@ int pid_max_pitch = pid_max_roll;
 float pid_p_gain_yaw = 3.00;
 float pid_i_gain_yaw = 0.02;
 float pid_d_gain_yaw = 0.00;
-int pid_max_yaw = 400;
+int pid_max_yaw = 300;
 
 float pid_i_mem_roll, pid_roll_setpoint, gyro_roll_input, pid_output_roll, pid_last_roll_d_error;
 float pid_i_mem_pitch, pid_pitch_setpoint, gyro_pitch_input, pid_output_pitch, pid_last_pitch_d_error;

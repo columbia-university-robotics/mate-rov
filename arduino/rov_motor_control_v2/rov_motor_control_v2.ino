@@ -61,14 +61,14 @@ boolean set_gyro_angles;
 int temperature;
 float pid_error_temp;
 
-const float angle_pitch_accel_cal = 0.628178439;
-const float angle_roll_accel_cal = -1.425186567;
+const float angle_pitch_accel_cal = 0.0; // 0.628178439;
+const float angle_roll_accel_cal = 0.0; // -1.425186567;
 // ============================================
 
 float rub = 0;
 float rbb = 0;
 float rb = 0;
-int throttle = 1600 ;
+int throttle = 1700 ;
 
 double pos = 0.0;
 bool x, y, yaw_on;
@@ -169,7 +169,7 @@ void setup() {
   lcd.setCursor(0, 1);
   lcd.print("V1.0");
 
-  delay(1000);
+  delay(500);
 
   lcd.clear();
 
@@ -205,8 +205,8 @@ void setup() {
 
   Wire1.begin();
   setup_mpu_6050();
-  delay(500);
-  // calibrate_mpu();
+  delay(100);
+  calibrate_mpu();
 
   lcd.setCursor(0, 0);                                                 //Set the LCD cursor to position to position 0,0
   lcd.print("Pitch:");                                                 //Print text to screen
@@ -227,29 +227,33 @@ void setup() {
 void loop() {
 
   int tbefore = micros();
-
+  
+  //---------------------------------------------------------------------------------------
   read_mpu_data();
+  //---------------------------------------------------------------------------------------
 
   //65.5 = 1 deg/sec (check the datasheet of the MPU-6050 for more information).
-  gyro_roll_input = (gyro_roll_input * 0.8) + ((gyro_x / 57.14286) * 0.2);            //Gyro pid input is deg/sec.
-  gyro_pitch_input = (gyro_pitch_input * 0.8) + ((gyro_y / 57.14286) * 0.2);         //Gyro pid input is deg/sec.
-  gyro_yaw_input = (gyro_yaw_input * 0.8) + ((gyro_z / 57.14286) * 0.2);               //Gyro pid input is deg/sec.
+  gyro_roll_input = (gyro_roll_input * 0.5) + ((gyro_x / 57.14286) * 0.5);              //Gyro pid input is deg/sec.
+  gyro_pitch_input = (gyro_pitch_input * 0.5) + ((gyro_y / 57.14286) * 0.5);            //Gyro pid input is deg/sec.
+  gyro_yaw_input = (gyro_yaw_input * 0.5) + ((gyro_z / 57.14286) * 0.5);                //Gyro pid input is deg/sec.
   
+  //---------------------------------------------------------------------------------------
   calculate_angle();
+  //---------------------------------------------------------------------------------------
 
   pid_roll_setpoint = 0;
 //  if (receiver_input_channel_4 > 1510) pid_roll_setpoint = receiver_input_channel_4 - 1510;
 //  else if (receiver_input_channel_4 < 1490) pid_roll_setpoint = receiver_input_channel_4 - 1490;
-//
-//  pid_roll_setpoint -= roll_level_adjust;                                   //Subtract the angle correction from the standardized receiver roll input value.
-//  pid_roll_setpoint /= 3.0;                                                 //Divide the setpoint for the PID roll controller by 3 to get angles in degrees.
+
+  pid_roll_setpoint -= roll_level_adjust;                                   //Subtract the angle correction from the standardized receiver roll input value.
+  pid_roll_setpoint /= 3.0;                                                 //Divide the setpoint for the PID roll controller by 3 to get angles in degrees.
 
   pid_pitch_setpoint = 0;
 //  if (receiver_input_channel_3 > 1510) pid_pitch_setpoint = receiver_input_channel_3 - 1510;
 //  else if (receiver_input_channel_3 < 1490) pid_pitch_setpoint = receiver_input_channel_3 - 1490;
-//
-//  pid_pitch_setpoint -= pitch_level_adjust;                                  //Subtract the angle correction from the standardized receiver pitch input value.
-//  pid_pitch_setpoint /= 3.0;                                                 //Divide the setpoint for the PID pitch controller by 3 to get angles in degrees.
+
+  pid_pitch_setpoint -= pitch_level_adjust;                                  //Subtract the angle correction from the standardized receiver pitch input value.
+  pid_pitch_setpoint /= 3.0;                                                 //Divide the setpoint for the PID pitch controller by 3 to get angles in degrees.
 
   pid_yaw_setpoint = 0;
   
@@ -260,16 +264,15 @@ void loop() {
   write_LCD();
 
   // -----debugging only -----
-  //  pos = left_vert;
   freq = calculate_freq(time_diff);
   debug_msg_1.data = freq;
   debug_pub_1.publish(&debug_msg_1);
   // -----debugging only -----
 
   motor_lu.writeMicroseconds( throttle - pid_output_pitch + pid_output_roll - pid_output_yaw ); // (front-right - CCW)
-  motor_fu.writeMicroseconds( throttle + pid_output_pitch + pid_output_roll + pid_output_yaw ); // (rear-right - CW)
+  // motor_fu.writeMicroseconds( throttle + pid_output_pitch + pid_output_roll + pid_output_yaw ); // (rear-right - CW)
   motor_ru.writeMicroseconds( throttle + pid_output_pitch - pid_output_roll - pid_output_yaw ); // (rear-left - CCW)
-  motor_bu.writeMicroseconds( throttle - pid_output_pitch - pid_output_roll + pid_output_yaw ); // (front-left - CW)
+  // motor_bu.writeMicroseconds( throttle - pid_output_pitch - pid_output_roll + pid_output_yaw ); // (front-left - CW)
 
   if (!x && !y && !yaw_on) {
     move_y(PULSE_OFF);
@@ -278,8 +281,8 @@ void loop() {
   nh.spinOnce();
   delay(delay_sec);        // delay in between reads for stability
 
-//  while (micros() - loop_timer < 10000);
-//  loop_timer = micros();
+  while (micros() - loop_timer < 4000);
+  loop_timer = micros();
 
   time_diff = micros() - tbefore;
 }
@@ -350,9 +353,8 @@ void calculate_angle() {
   gyro_z -= gyro_z_cal;                                                //Subtract the offset calibration value from the raw gyro_z value
 
   //Gyro angle calculations
-
   //0.0000611 = 1 / (250Hz / 65.5)
-  float k = 1.0 / freq / 65.5;
+  float k = 0.0000611;
   angle_pitch += gyro_x * k;                                   //Calculate the traveled pitch angle and add this to the angle_pitch variable
   angle_roll += gyro_y * k;                                    //Calculate the traveled roll angle and add this to the angle_roll variable
 
@@ -372,8 +374,8 @@ void calculate_angle() {
   angle_roll_acc -= angle_roll_accel_cal;                                               //Accelerometer calibration value for roll
 
   // set angle values
-  angle_pitch = angle_pitch * 0.9990 + angle_pitch_acc * 0.0010;     //Correct the drift of the gyro pitch angle with the accelerometer pitch angle
-  angle_roll = angle_roll * 0.9990 + angle_roll_acc * 0.0010;        //Correct the drift of the gyro roll angle with the accelerometer roll angle
+  angle_pitch = angle_pitch * 0.9900 + angle_pitch_acc * 0.0100;     //Correct the drift of the gyro pitch angle with the accelerometer pitch angle
+  angle_roll = angle_roll * 0.9990 + angle_roll_acc * 0.0100;        //Correct the drift of the gyro roll angle with the accelerometer roll angle
     
   pitch_level_adjust = angle_pitch * 10;
   roll_level_adjust = angle_roll * 10;
@@ -382,7 +384,7 @@ void calculate_angle() {
 //Subroutine for reading the raw gyro and accelerometer data
 void read_mpu_data() {
 
-  Wire1.beginTransmission(0x68);                                        //Start communicating with the MPU-6050
+  Wire1.beginTransmission(0x68);                                        
   Wire1.write(0x3B);                                                    //Send the requested starting register
   Wire1.endTransmission();                                              //End the transmission
   Wire1.requestFrom(0x68, 14);                                          //Request 14 bytes from the MPU-6050
@@ -403,7 +405,8 @@ void read_mpu_data() {
 void calibrate_mpu() {
 
   lcd.clear();
-  lcd.setCursor(0, 0);
+  lcd.print("Calibrating");
+  lcd.setCursor(0, 1);
   for (int cal_int = 0; cal_int < 2000; cal_int ++) {                 //Run this code 2000 times
     if (cal_int % 125 == 0) lcd.print(".");                          //Print a dot on the LCD every 125 readings
     read_mpu_data();                                                   //Read the raw acc and gyro data from the MPU-6050
@@ -442,10 +445,10 @@ void setup_mpu_6050() {
   Wire1.requestFrom(0x68, 1);                                                 //Request 1 bytes from the gyro
   while (Wire1.available() < 1);                                              //Wait until the 6 bytes are received
   if (Wire1.read() != 0x08) {                                                 //Check if the value is 0x08
-    digitalWrite(12, HIGH);                                                  //Turn on the warning led
-    lcd.setCursor(0, 0);                                                 //Set the LCD cursor to position to position 0,0
-    lcd.print("Init Sensors Failed");                                                 //Print text to screen
-    while (1) digitalWrite(12, HIGH);                                        //Stay in this loop for ever
+    digitalWrite(12, HIGH);                                                       //Turn on the warning led
+    lcd.setCursor(0, 0);                                                          //Set the LCD cursor to position to position 0,0
+    lcd.print("Init Sensors Failed");                                             //Print text to screen
+    while (1) digitalWrite(12, HIGH);                                             //Stay in this loop for ever
   }
 
   Wire1.beginTransmission(0x68);
@@ -464,7 +467,7 @@ void write_LCD() {
   if (lcd_loop_counter == 14)lcd_loop_counter = 0;                     //Reset the counter after 14 characters
   lcd_loop_counter ++;                                                 //Increase the counter
   if (lcd_loop_counter == 1) {
-    angle_pitch_buffer = throttle;                      //Buffer the pitch angle because it will change
+    angle_pitch_buffer = angle_pitch;// throttle - pid_output_pitch + pid_output_roll - pid_output_yaw;                      //Buffer the pitch angle because it will change
     lcd.setCursor(6, 0);                                               //Set the LCD cursor to position to position 0,0
   }
   if (lcd_loop_counter == 2) {
@@ -474,11 +477,11 @@ void write_LCD() {
   if (lcd_loop_counter == 3)lcd.print(abs(angle_pitch_buffer) / 1000); //Print first number
   if (lcd_loop_counter == 4)lcd.print((abs(angle_pitch_buffer) / 100) % 10); //Print second number
   if (lcd_loop_counter == 5)lcd.print((abs(angle_pitch_buffer) / 10) % 10); //Print third number
-  if (lcd_loop_counter == 6)lcd.print(".");                            //Print decimal point
+  // if (lcd_loop_counter == 6)lcd.print(".");                            //Print decimal point
   if (lcd_loop_counter == 7)lcd.print(abs(angle_pitch_buffer) % 10);   //Print decimal number
 
   if (lcd_loop_counter == 8) {
-    angle_roll_buffer = throttle;
+    angle_roll_buffer = throttle + pid_output_pitch - pid_output_roll + pid_output_yaw;
     lcd.setCursor(6, 1);
   }
   if (lcd_loop_counter == 9) {
@@ -488,7 +491,7 @@ void write_LCD() {
   if (lcd_loop_counter == 10)lcd.print(abs(angle_roll_buffer) / 1000); //Print first number
   if (lcd_loop_counter == 11)lcd.print((abs(angle_roll_buffer) / 100) % 10); //Print second number
   if (lcd_loop_counter == 12)lcd.print((abs(angle_roll_buffer) / 10) % 10); //Print third number
-  if (lcd_loop_counter == 13)lcd.print(".");                           //Print decimal point
+  // if (lcd_loop_counter == 13)lcd.print(".");                           //Print decimal point
   if (lcd_loop_counter == 14)lcd.print(abs(angle_roll_buffer) % 10);   //Print decimal number
 }
 
@@ -539,6 +542,7 @@ void resetPID() {
   angle_pitch = angle_pitch_acc;                                          //Set the gyro pitch angle equal to the accelerometer pitch angle when the quadcopter is started.
   angle_roll = angle_roll_acc;
   set_gyro_angles = true;
+  
   //reset all PID controllers
   pid_i_mem_roll = 0;
   pid_last_roll_d_error = 0;
