@@ -4,7 +4,7 @@
 float pid_p_gain_roll = 1.20;               //Gain setting for the roll P-controller
 float pid_i_gain_roll = 0.02;              //Gain setting for the roll I-controller
 float pid_d_gain_roll = 13.00;              //Gain setting for the roll D-controller
-int pid_max_roll = 400;                    //Maximum output of the PID-controller (+/-)
+int pid_max_roll = 300;                    //Maximum output of the PID-controller (+/-)
 
 float pid_p_gain_pitch = pid_p_gain_roll;
 float pid_i_gain_pitch = pid_i_gain_roll;

@@ -68,7 +68,8 @@ const float angle_roll_accel_cal = 0.0; // -1.425186567;
 float rub = 0;
 float rbb = 0;
 float rb = 0;
-int throttle = 1700 ;
+int throttle = 1700;
+int n_throttle = 1300 ;
 
 double pos = 0.0;
 bool x, y, yaw_on;
@@ -160,6 +161,8 @@ ros::Subscriber<std_msgs::Float32> down_button_sub("/controller/right_bottombump
 
 void setup() {
 
+  delay(1000);
+
   lcd.begin();
   lcd.backlight();
   lcd.clear();
@@ -174,15 +177,15 @@ void setup() {
   lcd.clear();
 
   // init node handler
-  nh.initNode();
-  nh.subscribe(lh_sub);
-  nh.subscribe(lv_sub);
-  nh.subscribe(rh_sub);
-  nh.subscribe(rv_sub);
-  nh.subscribe(up_button_sub);
-  nh.subscribe(down_button_sub);
-
-  nh.advertise(debug_pub_1);
+//  nh.initNode();
+//  nh.subscribe(lh_sub);
+//  nh.subscribe(lv_sub);
+//  nh.subscribe(rh_sub);
+//  nh.subscribe(rv_sub);
+//  nh.subscribe(up_button_sub);
+//  nh.subscribe(down_button_sub);
+//
+//  nh.advertise(debug_pub_1);
 
   // initialize serial communication
   motor_fr.attach(MOTOR_PORT_1);
@@ -209,9 +212,9 @@ void setup() {
   calibrate_mpu();
 
   lcd.setCursor(0, 0);                                                 //Set the LCD cursor to position to position 0,0
-  lcd.print("Pitch:");                                                 //Print text to screen
+  lcd.print("Left :");                                                 //Print text to screen
   lcd.setCursor(0, 1);                                                 //Set the LCD cursor to position to position 0,1
-  lcd.print("Roll :");                                                 //Print text to screen
+  lcd.print("Right:");                                                 //Print text to screen
 
   delay(500);
 
@@ -231,12 +234,11 @@ void loop() {
   //---------------------------------------------------------------------------------------
   read_mpu_data();
   //---------------------------------------------------------------------------------------
-
   //65.5 = 1 deg/sec (check the datasheet of the MPU-6050 for more information).
-  gyro_roll_input = (gyro_roll_input * 0.5) + ((gyro_x / 57.14286) * 0.5);              //Gyro pid input is deg/sec.
-  gyro_pitch_input = (gyro_pitch_input * 0.5) + ((gyro_y / 57.14286) * 0.5);            //Gyro pid input is deg/sec.
-  gyro_yaw_input = (gyro_yaw_input * 0.5) + ((gyro_z / 57.14286) * 0.5);                //Gyro pid input is deg/sec.
-  
+  gyro_roll_input = (gyro_roll_input * 0.8) + ((gyro_x / 57.14286) * 0.2);            //Gyro pid input is deg/sec.
+  gyro_pitch_input = (gyro_pitch_input * 0.8) + ((gyro_y / 57.14286) * 0.2);         //Gyro pid input is deg/sec.
+  gyro_yaw_input = (gyro_yaw_input * 0.8) + ((gyro_z / 57.14286) * 0.2);               //Gyro pid input is deg/sec.
+
   //---------------------------------------------------------------------------------------
   calculate_angle();
   //---------------------------------------------------------------------------------------
@@ -264,14 +266,14 @@ void loop() {
   write_LCD();
 
   // -----debugging only -----
-  freq = calculate_freq(time_diff);
-  debug_msg_1.data = freq;
-  debug_pub_1.publish(&debug_msg_1);
+//  freq = calculate_freq(time_diff);
+//  debug_msg_1.data = freq;
+//  debug_pub_1.publish(&debug_msg_1);
   // -----debugging only -----
 
-  motor_lu.writeMicroseconds( throttle - pid_output_pitch + pid_output_roll - pid_output_yaw ); // (front-right - CCW)
+  motor_lu.writeMicroseconds(throttle - pid_output_roll); //( throttle - pid_output_pitch + pid_output_roll - pid_output_yaw ); // (front-right - CCW)
   // motor_fu.writeMicroseconds( throttle + pid_output_pitch + pid_output_roll + pid_output_yaw ); // (rear-right - CW)
-  motor_ru.writeMicroseconds( throttle + pid_output_pitch - pid_output_roll - pid_output_yaw ); // (rear-left - CCW)
+  motor_ru.writeMicroseconds(throttle + pid_output_roll); //( throttle + pid_output_pitch - pid_output_roll - pid_output_yaw ); // (rear-left - CCW)
   // motor_bu.writeMicroseconds( throttle - pid_output_pitch - pid_output_roll + pid_output_yaw ); // (front-left - CW)
 
   if (!x && !y && !yaw_on) {
@@ -366,8 +368,8 @@ void calculate_angle() {
   //Accelerometer angle calculations
   acc_total_vector = sqrt((acc_x * acc_x) + (acc_y * acc_y) + (acc_z * acc_z)); //Calculate the total accelerometer vector
   //57.296 = 1 / (3.142 / 180) The Arduino asin function is in radians
-  angle_pitch_acc = asin((float)acc_y / acc_total_vector) * 57.296;    //Calculate the pitch angle
-  angle_roll_acc = asin((float)acc_x / acc_total_vector) * -57.296;    //Calculate the roll angle
+  if (abs(acc_y) < acc_total_vector) angle_pitch_acc = asin((float)acc_y / acc_total_vector) * 57.296;       //Calculate the pitch angle.
+  if (abs(acc_x) < acc_total_vector) angle_roll_acc = asin((float)acc_x / acc_total_vector) * -57.296;
 
   //Place the MPU-6050 spirit level and note the values in the following two lines for calibration
   angle_pitch_acc -= angle_pitch_accel_cal;                                              //Accelerometer calibration value for pitch
@@ -467,7 +469,7 @@ void write_LCD() {
   if (lcd_loop_counter == 14)lcd_loop_counter = 0;                     //Reset the counter after 14 characters
   lcd_loop_counter ++;                                                 //Increase the counter
   if (lcd_loop_counter == 1) {
-    angle_pitch_buffer = angle_pitch;// throttle - pid_output_pitch + pid_output_roll - pid_output_yaw;                      //Buffer the pitch angle because it will change
+    angle_pitch_buffer = throttle - pid_output_pitch;// throttle - pid_output_pitch + pid_output_roll - pid_output_yaw;                      //Buffer the pitch angle because it will change
     lcd.setCursor(6, 0);                                               //Set the LCD cursor to position to position 0,0
   }
   if (lcd_loop_counter == 2) {
@@ -481,7 +483,7 @@ void write_LCD() {
   if (lcd_loop_counter == 7)lcd.print(abs(angle_pitch_buffer) % 10);   //Print decimal number
 
   if (lcd_loop_counter == 8) {
-    angle_roll_buffer = throttle + pid_output_pitch - pid_output_roll + pid_output_yaw;
+    angle_roll_buffer = throttle + pid_output_pitch;
     lcd.setCursor(6, 1);
   }
   if (lcd_loop_counter == 9) {
