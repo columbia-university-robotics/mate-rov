@@ -33,6 +33,7 @@
 #include "pid_vars.h"
 #include "motor_def.h"
 #include "helper_methods.h"
+#include "pio.h"
 
 ros::NodeHandle nh;
 extern TwoWire Wire1; // use SCL1 & SDA1
@@ -271,10 +272,17 @@ void loop() {
 //  debug_pub_1.publish(&debug_msg_1);
   // -----debugging only -----
 
-  // motor_lu.writeMicroseconds(throttle - pid_output_roll); //( throttle - pid_output_pitch + pid_output_roll - pid_output_yaw ); // (front-right - CCW)
-  // motor_fu.writeMicroseconds( throttle + pid_output_pitch + pid_output_roll + pid_output_yaw ); // (rear-right - CW)
-  // motor_ru.writeMicroseconds(throttle + pid_output_roll); //( throttle + pid_output_pitch - pid_output_roll - pid_output_yaw ); // (rear-left - CCW)
-  // motor_bu.writeMicroseconds( throttle - pid_output_pitch - pid_output_roll + pid_output_yaw ); // (front-left - CW)
+  // setting all motors HIGH
+  REG_PIOC_OWER = PORTD_MALL;
+
+  REG_PIOC_CODR = PORTD_12;
+  REG_PIOC_CODR = PORTD_11;
+  REG_PIOC_CODR = PORTD_10;
+  REG_PIOC_CODR = PORTD_9;
+  REG_PIOC_CODR = PORTD_8;
+  REG_PIOC_CODR = PORTD_7;
+  REG_PIOC_CODR = PORTD_6;
+  REG_PIOC_CODR = PORTD_5;
 
   if (!x && !y && !yaw_on) {
     move_y(PULSE_OFF);
