@@ -79,6 +79,10 @@ bool x, y, yaw_on;
 //    motor 1   motor 2   motor  3  motor 4   motor 5    motor  6  motor 7   motor  8
 Servo motor_fl, motor_fr, motor_rr, motor_rl, motor_lu, motor_fu , motor_ru, motor_bu;
 float left_hori, left_vert, right_hori, right_vert;
+int thruster_1, thruster_2, thruster_3, thruster_4, thruster_5, thruster_6, thruster_7, thruster_8;
+unsigned long thruster_timer_1, thruster_timer_2, thruster_timer_3, thruster_timer_4;
+unsigned long thruster_timer_5, thruster_timer_6, thruster_timer_7, thruster_timer_8;
+unsigned long esc_timer, esc_loop_timer;
 // ==========================================================================
 
 std_msgs::Float64 debug_msg_1;
@@ -90,9 +94,9 @@ ros::Publisher yaw_pub("/rov/sensor/yaw", &yaw_msg);
 ros::Publisher pitch_pub("/rov/sensor/pitch", &pitch_msg);
 ros::Publisher roll_pub("/rov/sensor/roll", &roll_msg);
 
-// ===================================================
+// ========================================================================================
 // =============== ROS callback methods ==============
-// ===================================================
+// ========================================================================================
 
 void left_hori_cb(const std_msgs::Float32& msg) {
 
@@ -155,9 +159,9 @@ ros::Subscriber<std_msgs::Float32> rv_sub("/controller/right_vert", &right_vert_
 ros::Subscriber<std_msgs::Float32> up_button_sub("/controller/right_topbumper", &right_bottom_bumper_cb);
 ros::Subscriber<std_msgs::Float32> down_button_sub("/controller/right_bottombumper", &right_upper_bumper_cb);
 
-// ===================================================
-// ====================== setup ======================
-// ===================================================
+// ========================================================================================
+// ======================================== SETUP =========================================
+// ========================================================================================
 // the setup routine runs once when you press reset:
 
 void setup() {
@@ -178,15 +182,15 @@ void setup() {
   lcd.clear();
 
   // init node handler
-//  nh.initNode();
-//  nh.subscribe(lh_sub);
-//  nh.subscribe(lv_sub);
-//  nh.subscribe(rh_sub);
-//  nh.subscribe(rv_sub);
-//  nh.subscribe(up_button_sub);
-//  nh.subscribe(down_button_sub);
-//
-//  nh.advertise(debug_pub_1);
+  //  nh.initNode();
+  //  nh.subscribe(lh_sub);
+  //  nh.subscribe(lv_sub);
+  //  nh.subscribe(rh_sub);
+  //  nh.subscribe(rv_sub);
+  //  nh.subscribe(up_button_sub);
+  //  nh.subscribe(down_button_sub);
+  //
+  //  nh.advertise(debug_pub_1);
 
   // initialize serial communication
   motor_fr.attach(MOTOR_PORT_1);
@@ -220,18 +224,21 @@ void setup() {
   delay(500);
 
   resetPID();
-  
+
   loop_timer = micros();
 }
 
-// ===========================================================
-// ========================== loop ===========================
-// ===========================================================
+// ========================================================================================
+// ========================================================================================
+// ========================================= LOOP =========================================
+// ========================================================================================
+// ========================================================================================
+
 // the loop routine runs over and over again forever:
 void loop() {
 
   int tbefore = micros();
-  
+
   //---------------------------------------------------------------------------------------
   read_mpu_data();
   //---------------------------------------------------------------------------------------
@@ -245,21 +252,21 @@ void loop() {
   //---------------------------------------------------------------------------------------
 
   pid_roll_setpoint = 0;
-//  if (receiver_input_channel_4 > 1510) pid_roll_setpoint = receiver_input_channel_4 - 1510;
-//  else if (receiver_input_channel_4 < 1490) pid_roll_setpoint = receiver_input_channel_4 - 1490;
+  //  if (receiver_input_channel_4 > 1510) pid_roll_setpoint = receiver_input_channel_4 - 1510;
+  //  else if (receiver_input_channel_4 < 1490) pid_roll_setpoint = receiver_input_channel_4 - 1490;
 
   pid_roll_setpoint -= roll_level_adjust;                                   //Subtract the angle correction from the standardized receiver roll input value.
   pid_roll_setpoint /= 3.0;                                                 //Divide the setpoint for the PID roll controller by 3 to get angles in degrees.
 
   pid_pitch_setpoint = 0;
-//  if (receiver_input_channel_3 > 1510) pid_pitch_setpoint = receiver_input_channel_3 - 1510;
-//  else if (receiver_input_channel_3 < 1490) pid_pitch_setpoint = receiver_input_channel_3 - 1490;
+  //  if (receiver_input_channel_3 > 1510) pid_pitch_setpoint = receiver_input_channel_3 - 1510;
+  //  else if (receiver_input_channel_3 < 1490) pid_pitch_setpoint = receiver_input_channel_3 - 1490;
 
   pid_pitch_setpoint -= pitch_level_adjust;                                  //Subtract the angle correction from the standardized receiver pitch input value.
   pid_pitch_setpoint /= 3.0;                                                 //Divide the setpoint for the PID pitch controller by 3 to get angles in degrees.
 
   pid_yaw_setpoint = 0;
-  
+
   //---------------------------------------------------------------------------------------
   calculate_pid();
   //---------------------------------------------------------------------------------------
@@ -267,39 +274,82 @@ void loop() {
   write_LCD();
 
   // -----debugging only -----
-//  freq = calculate_freq(time_diff);
-//  debug_msg_1.data = freq;
-//  debug_pub_1.publish(&debug_msg_1);
+  //  freq = calculate_freq(time_diff);
+  //  debug_msg_1.data = freq;
+  //  debug_pub_1.publish(&debug_msg_1);
   // -----debugging only -----
-
-  // setting all motors HIGH
-  REG_PIOC_OWER = PORTD_MALL;
-
-  REG_PIOC_CODR = PORTD_12;
-  REG_PIOC_CODR = PORTD_11;
-  REG_PIOC_CODR = PORTD_10;
-  REG_PIOC_CODR = PORTD_9;
-  REG_PIOC_CODR = PORTD_8;
-  REG_PIOC_CODR = PORTD_7;
-  REG_PIOC_CODR = PORTD_6;
-  REG_PIOC_CODR = PORTD_5;
 
   if (!x && !y && !yaw_on) {
     move_y(PULSE_OFF);
   }
 
-  // nh.spinOnce();
-  // delay(delay_sec);        // delay in between reads for stability
 
-  while (micros() - loop_timer < 4000);
+  //---------------------------------------------------------------------------------------
+  //---------------------------------------------------------------------------------------
+  //---------------------------------------------------------------------------------------
+
+  // thruster pulse calculations
+  thruster_1 = PULSE_OFF;
+  thruster_2 = PULSE_OFF;
+  thruster_3 = PULSE_OFF;
+  thruster_4 = PULSE_OFF;
+  thruster_5 = throttle - pid_output_roll;
+  thruster_6 = throttle;
+  thruster_7 = throttle + pid_output_roll;
+  thruster_8 = throttle;
+
+  //We wait until 4000us are passed.
+  while (micros() - loop_timer < 4000);                                     
+  
   loop_timer = micros();
 
+  // setting all motors HIGH
+  REG_PIOC_OWER = PORTD_MALL;
+
+  // all timer calculations
+  thruster_timer_1 = thruster_1 + loop_timer;
+  thruster_timer_2 = thruster_2 + loop_timer;
+  thruster_timer_3 = thruster_3 + loop_timer;
+  thruster_timer_4 = thruster_4 + loop_timer;
+  thruster_timer_5 = thruster_5 + loop_timer;
+  thruster_timer_6 = thruster_6 + loop_timer;
+  thruster_timer_7 = thruster_7 + loop_timer;
+  thruster_timer_8 = thruster_8 + loop_timer;
+
+  // read the register states
+  uint32_t c_status = PIOC->PIO_PDSR;           // 21st digit left
+  uint32_t d_status = PIOD->PIO_PDSR;
+
+  port_12_status = d_status & (d_status << 8);
+  port_11_status = d_status & (d_status << 7);
+
+  // Stay in this loop until output 5 - 12 PIN are low.
+  while (port_12_status || port_11_status || (c_status >= 0x00200000)) {
+    esc_loop_timer = micros();
+    if (thruster_timer_1 <= esc_loop_timer) REG_PIOC_CODR = PORTD_12;     // turn motor 1 off --> Port 12
+    if (thruster_timer_2 <= esc_loop_timer) REG_PIOC_CODR = PORTD_11;     // turn motor 2 off --> Port 11
+    if (thruster_timer_3 <= esc_loop_timer) REG_PIOC_CODR = PORTD_10;     // turn motor 3 off --> Port 10
+    if (thruster_timer_4 <= esc_loop_timer) REG_PIOC_CODR = PORTD_9;      // turn motor 4 off --> Port 9
+    if (thruster_timer_5 <= esc_loop_timer) REG_PIOC_CODR = PORTD_8;      // turn motor 5 off --> Port 8
+    if (thruster_timer_6 <= esc_loop_timer) REG_PIOC_CODR = PORTD_7;      // turn motor 6 off --> Port 7
+    if (thruster_timer_7 <= esc_loop_timer) REG_PIOC_CODR = PORTD_6;      // turn motor 7 off --> Port 6
+    if (thruster_timer_8 <= esc_loop_timer) REG_PIOC_CODR = PORTD_5;      // turn motor 8 off --> Port 5
+
+  }
+  //---------------------------------------------------------------------------------------
+  //---------------------------------------------------------------------------------------
+  //---------------------------------------------------------------------------------------
+  //---------------------------------------------------------------------------------------
+
+  // nh.spinOnce();
+  // delay(delay_sec);        // delay in between reads for stability
+  
   time_diff = micros() - tbefore;
 }
 
-// ===========================================================
-// ========================== moving =========================
-// ===========================================================
+// ========================================================================================
+// ======================================== MOVING ========================================
+// ========================================================================================
 
 // int powervalue;
 // controller by the verticle left joystick movement
@@ -386,7 +436,7 @@ void calculate_angle() {
   // set angle values
   angle_pitch = angle_pitch * 0.9900 + angle_pitch_acc * 0.0100;     //Correct the drift of the gyro pitch angle with the accelerometer pitch angle
   angle_roll = angle_roll * 0.9990 + angle_roll_acc * 0.0100;        //Correct the drift of the gyro roll angle with the accelerometer roll angle
-    
+
   pitch_level_adjust = angle_pitch * 10;
   roll_level_adjust = angle_roll * 10;
 }
@@ -394,7 +444,7 @@ void calculate_angle() {
 //Subroutine for reading the raw gyro and accelerometer data
 void read_mpu_data() {
 
-  Wire1.beginTransmission(0x68);                                        
+  Wire1.beginTransmission(0x68);
   Wire1.write(0x3B);                                                    //Send the requested starting register
   Wire1.endTransmission();                                              //End the transmission
   Wire1.requestFrom(0x68, 14);                                          //Request 14 bytes from the MPU-6050
@@ -509,7 +559,7 @@ void write_LCD() {
 // =========================== PID ===========================
 // ===========================================================
 void calculate_pid() {
-  
+
   //Roll calculations
   pid_error_temp = gyro_roll_input - pid_roll_setpoint;
   pid_i_mem_roll += pid_i_gain_roll * pid_error_temp;
@@ -552,7 +602,7 @@ void resetPID() {
   angle_pitch = angle_pitch_acc;                                          //Set the gyro pitch angle equal to the accelerometer pitch angle when the quadcopter is started.
   angle_roll = angle_roll_acc;
   set_gyro_angles = true;
-  
+
   //reset all PID controllers
   pid_i_mem_roll = 0;
   pid_last_roll_d_error = 0;
