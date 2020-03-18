@@ -14,11 +14,8 @@
    Contact: Neil, yn2376@columbia.edu
 
   https://github.com/ros-drivers/rosserial/tree/melodic-devel/rosserial_arduino
-
   https://answers.ros.org/question/264764/rosserial-arduino-due-sync-issues/
-
   http://docs.ros.org/jade/api/rosserial_arduino/html/ArduinoHardware_8h_source.html
-
   http://docs.ros.org/jade/api/rosserial_arduino/html/ArduinoHardware_8h.html
 */
 
@@ -79,7 +76,7 @@ bool x, y, yaw_on;
 //    motor 1   motor 2   motor  3  motor 4   motor 5    motor  6  motor 7   motor  8
 Servo motor_fl, motor_fr, motor_rr, motor_rl, motor_lu, motor_fu , motor_ru, motor_bu;
 float left_hori, left_vert, right_hori, right_vert;
-int thruster_1, thruster_2, thruster_3, thruster_4, thruster_5, thruster_6, thruster_7, thruster_8;
+unsigned long thruster_1, thruster_2, thruster_3, thruster_4, thruster_5, thruster_6, thruster_7, thruster_8;
 unsigned long thruster_timer_1, thruster_timer_2, thruster_timer_3, thruster_timer_4;
 unsigned long thruster_timer_5, thruster_timer_6, thruster_timer_7, thruster_timer_8;
 unsigned long esc_timer, esc_loop_timer;
@@ -95,7 +92,7 @@ ros::Publisher pitch_pub("/rov/sensor/pitch", &pitch_msg);
 ros::Publisher roll_pub("/rov/sensor/roll", &roll_msg);
 
 // ========================================================================================
-// =============== ROS callback methods ==============
+// ================================= ROS callback methods =================================
 // ========================================================================================
 
 void left_hori_cb(const std_msgs::Float32& msg) {
@@ -160,8 +157,11 @@ ros::Subscriber<std_msgs::Float32> up_button_sub("/controller/right_topbumper", 
 ros::Subscriber<std_msgs::Float32> down_button_sub("/controller/right_bottombumper", &right_upper_bumper_cb);
 
 // ========================================================================================
+// ========================================================================================
 // ======================================== SETUP =========================================
 // ========================================================================================
+// ========================================================================================
+
 // the setup routine runs once when you press reset:
 
 void setup() {
@@ -182,34 +182,21 @@ void setup() {
   lcd.clear();
 
   // init node handler
-  //  nh.initNode();
-  //  nh.subscribe(lh_sub);
-  //  nh.subscribe(lv_sub);
-  //  nh.subscribe(rh_sub);
-  //  nh.subscribe(rv_sub);
-  //  nh.subscribe(up_button_sub);
-  //  nh.subscribe(down_button_sub);
-  //
-  //  nh.advertise(debug_pub_1);
+  nh.initNode();
+  nh.subscribe(lh_sub);
+  nh.subscribe(lv_sub);
+  nh.subscribe(rh_sub);
+  nh.subscribe(rv_sub);
+  nh.subscribe(up_button_sub);
+  nh.subscribe(down_button_sub);
+
+  nh.advertise(debug_pub_1);
 
   // initialize serial communication
-  motor_fr.attach(MOTOR_PORT_1);
-  motor_fl.attach(MOTOR_PORT_2);
-  motor_rr.attach(MOTOR_PORT_3);
-  motor_rl.attach(MOTOR_PORT_4);
-  motor_lu.attach(MOTOR_PORT_5);
-  motor_fu.attach(MOTOR_PORT_6);
-  motor_ru.attach(MOTOR_PORT_7);
-  motor_bu.attach(MOTOR_PORT_8);
+  REG_PIOC_OER = PORTD_C_MALL;          // PIOC Motor Port ALL
+  REG_PIOD_OER = PORTD_D_MALL;          // PIOD Motor Port ALL
 
-  motor_fl.writeMicroseconds(PULSE_OFF);
-  motor_fr.writeMicroseconds(PULSE_OFF);
-  motor_rr.writeMicroseconds(PULSE_OFF);
-  motor_rl.writeMicroseconds(PULSE_OFF);
-  motor_lu.writeMicroseconds(PULSE_OFF);
-  motor_fu.writeMicroseconds(PULSE_OFF);
-  motor_ru.writeMicroseconds(PULSE_OFF);
-  motor_bu.writeMicroseconds(PULSE_OFF);
+  reset_motors();
 
   Wire1.begin();
   setup_mpu_6050();
@@ -224,6 +211,8 @@ void setup() {
   delay(500);
 
   resetPID();
+
+  Serial.begin(9600);
 
   loop_timer = micros();
 }
@@ -270,9 +259,7 @@ void loop() {
   //---------------------------------------------------------------------------------------
   calculate_pid();
   //---------------------------------------------------------------------------------------
-
-  write_LCD();
-
+  
   // -----debugging only -----
   //  freq = calculate_freq(time_diff);
   //  debug_msg_1.data = freq;
@@ -283,28 +270,28 @@ void loop() {
     move_y(PULSE_OFF);
   }
 
+  // write_LCD();
 
   //---------------------------------------------------------------------------------------
+  //--------------------------------- MOTOR CONTROL ---------------------------------------
   //---------------------------------------------------------------------------------------
-  //---------------------------------------------------------------------------------------
-
+  
   // thruster pulse calculations
   thruster_1 = PULSE_OFF;
   thruster_2 = PULSE_OFF;
   thruster_3 = PULSE_OFF;
   thruster_4 = PULSE_OFF;
-  thruster_5 = throttle - pid_output_roll;
+  thruster_5 = throttle - pid_output_pitch;
   thruster_6 = throttle;
-  thruster_7 = throttle + pid_output_roll;
+  thruster_7 = throttle + pid_output_pitch;
   thruster_8 = throttle;
 
   //We wait until 4000us are passed.
-  while (micros() - loop_timer < 4000);                                     
-  
+  while (micros() - loop_timer < 4000);
+
   loop_timer = micros();
 
-  // setting all motors HIGH
-  REG_PIOC_OWER = PORTD_MALL;
+  ALL_PORTM_HIGH;
 
   // all timer calculations
   thruster_timer_1 = thruster_1 + loop_timer;
@@ -317,38 +304,40 @@ void loop() {
   thruster_timer_8 = thruster_8 + loop_timer;
 
   // read the register states
-  uint32_t c_status = PIOC->PIO_PDSR;           // 21st digit left
-  uint32_t d_status = PIOD->PIO_PDSR;
-
-  port_12_status = d_status & (d_status << 8);
-  port_11_status = d_status & (d_status << 7);
+  uint32_t c_status = PIOC->PIO_ODSR >> 21;           
+  uint32_t d_status = PIOD->PIO_ODSR >> 7;
 
   // Stay in this loop until output 5 - 12 PIN are low.
-  while (port_12_status || port_11_status || (c_status >= 0x00200000)) {
+  while ((d_status != 0) || (c_status != 0)) {
     esc_loop_timer = micros();
-    if (thruster_timer_1 <= esc_loop_timer) REG_PIOC_CODR = PORTD_12;     // turn motor 1 off --> Port 12
-    if (thruster_timer_2 <= esc_loop_timer) REG_PIOC_CODR = PORTD_11;     // turn motor 2 off --> Port 11
+    if (thruster_timer_1 <= esc_loop_timer) REG_PIOD_CODR = PORTD_12;     // turn motor 1 off --> Port 12
+    if (thruster_timer_2 <= esc_loop_timer) REG_PIOD_CODR = PORTD_11;     // turn motor 2 off --> Port 11
     if (thruster_timer_3 <= esc_loop_timer) REG_PIOC_CODR = PORTD_10;     // turn motor 3 off --> Port 10
     if (thruster_timer_4 <= esc_loop_timer) REG_PIOC_CODR = PORTD_9;      // turn motor 4 off --> Port 9
     if (thruster_timer_5 <= esc_loop_timer) REG_PIOC_CODR = PORTD_8;      // turn motor 5 off --> Port 8
     if (thruster_timer_6 <= esc_loop_timer) REG_PIOC_CODR = PORTD_7;      // turn motor 6 off --> Port 7
     if (thruster_timer_7 <= esc_loop_timer) REG_PIOC_CODR = PORTD_6;      // turn motor 7 off --> Port 6
-    if (thruster_timer_8 <= esc_loop_timer) REG_PIOC_CODR = PORTD_5;      // turn motor 8 off --> Port 5
+    if (thruster_timer_8 <= esc_loop_timer) REG_PIOC_CODR = PORTD_5;      // turn motor 8 off --> Port 5 
 
+    c_status = PIOC->PIO_ODSR >> 21;           
+    d_status = PIOD->PIO_ODSR >> 7;
   }
+  
   //---------------------------------------------------------------------------------------
   //---------------------------------------------------------------------------------------
   //---------------------------------------------------------------------------------------
   //---------------------------------------------------------------------------------------
 
-  // nh.spinOnce();
-  // delay(delay_sec);        // delay in between reads for stability
+  nh.spinOnce();
   
   time_diff = micros() - tbefore;
 }
 
+
+// ========================================================================================
 // ========================================================================================
 // ======================================== MOVING ========================================
+// ========================================================================================
 // ========================================================================================
 
 // int powervalue;
@@ -403,9 +392,12 @@ void roll(float roll) {
   motor_lu.writeMicroseconds(reverse_motor(roll));
 }
 
-// ===========================================================
-// =========================== MPU ===========================
-// ===========================================================
+// ========================================================================================
+// ========================================================================================
+// ========================================= MPU ==========================================
+// ========================================================================================
+// ========================================================================================
+
 void calculate_angle() {
 
   gyro_x -= gyro_x_cal;                                                //Subtract the offset calibration value from the raw gyro_x value
@@ -519,6 +511,7 @@ void setup_mpu_6050() {
 // ===========================================================
 // =========================== LCD ===========================
 // ===========================================================
+
 void write_LCD() {
 
   //Subroutine for writing the LCD
@@ -558,6 +551,7 @@ void write_LCD() {
 // ===========================================================
 // =========================== PID ===========================
 // ===========================================================
+
 void calculate_pid() {
 
   //Roll calculations
@@ -611,4 +605,13 @@ void resetPID() {
   pid_i_mem_yaw = 0;
   pid_last_yaw_d_error = 0;
 
+}
+
+void reset_motors() {
+  for (int i = 0; i < 300; i++) {
+    ALL_PORTM_HIGH;
+    delayMicroseconds(1500);
+    ALL_PORTM_LOW;                                                     //Set digital poort 5 - 12 low.
+    delay(3);   //Delay 3us to simulate the 25
+  }
 }

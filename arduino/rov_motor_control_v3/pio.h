@@ -7,9 +7,12 @@
 #define PORTD_6  0x01000000       // C24
 #define PORTD_5  0x02000000       // C25
 
-#define PORTD_MALL 0x23E00000
+#define PORTD_D_MALL 0x00000180
+#define PORTD_C_MALL 0x23E00000
+#define PORTD_MALL   0x23E00180
 
-
+#define ALL_PORTM_HIGH ({REG_PIOC_SODR = PORTD_C_MALL; REG_PIOD_SODR = PORTD_D_MALL; })
+#define ALL_PORTM_LOW  ({REG_PIOC_CODR = PORTD_C_MALL; REG_PIOD_CODR = PORTD_D_MALL; })
 
 //  port_10_status = c_status & (c_status << 29);
 //  port_9_status  = c_status & (c_status << 21);
