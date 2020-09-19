@@ -23,6 +23,8 @@ OK! great you made it this far, this means you understand the basics to have dif
 Besides getting a better understanding of using the commandl line, python and c++ we'll also get a chance to use git.
 For this next portion what we'll be doing is actually getting into the heart of what we might use to simulate the "submarine" we'll use for the MATE ROV challenge.
 
+heres a link to the git repo https://github.com/NishanthARao/ROS-Quadcopter-Simulation
+
 For simplicity we'll be working from your home directory ( i.e. "~/").
 
 Open a terminal using the method you used before. And input the following ( line-by-line).
@@ -33,7 +35,7 @@ sudo apt-get install ros-melodic-joint-state-controller ros-melodic-effort-contr
 cd ~/
 mkdir -p quad_simulation_workspace/src
 cd quad_simulation_workspace/src
-git clone https://github.com/NishanthARao/ROS-Quadcopter-Simulation
+git clone https://github.com/NishanthARao/ROS-Quadcopter-Simulation.git
 cd ./ROS-Quadcopter-Simulation/src/
 chmod u+x control.py
 chmod u+x pid.py
