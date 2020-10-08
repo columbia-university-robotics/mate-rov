@@ -1,0 +1,12 @@
+
+
+
+
+<launch>
+
+  <node name="listener_1" pkg="beginner_tutorials" type="listener.py" output="screen"/>
+
+  <node name="talker_2" pkg="beginner_tutorials" type="talker.py" output="screen" />
+
+
+</launch>

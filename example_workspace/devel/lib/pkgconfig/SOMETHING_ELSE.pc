@@ -1,0 +1,8 @@
+prefix=/home/hada/Workspace/example_workspace/devel
+
+Name: SOMETHING_ELSE
+Description: Description of SOMETHING_ELSE
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 
