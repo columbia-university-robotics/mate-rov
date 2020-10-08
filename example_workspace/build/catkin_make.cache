@@ -1,2 +1,0 @@
-SOMETHING_ELSE:beginner_tutorials
--DCATKIN_DEVEL_PREFIX=/home/hada/Workspace/example_workspace/devel -DCMAKE_INSTALL_PREFIX=/home/hada/Workspace/example_workspace/install -G Unix Makefiles

@@ -1,8 +1,0 @@
-# generated from catkin/cmake/template/pkg.context.pc.in
-CATKIN_PACKAGE_PREFIX = ""
-PROJECT_PKG_CONFIG_INCLUDE_DIRS = "".split(';') if "" != "" else []
-PROJECT_CATKIN_DEPENDS = "".replace(';', ' ')
-PKG_CONFIG_LIBRARIES_WITH_PREFIX = "".split(';') if "" != "" else []
-PROJECT_NAME = "SOMETHING_ELSE"
-PROJECT_SPACE_DIR = "/home/hada/Workspace/example_workspace/devel"
-PROJECT_VERSION = "0.0.0"

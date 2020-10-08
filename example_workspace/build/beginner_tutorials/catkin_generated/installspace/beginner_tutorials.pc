@@ -1,8 +1,0 @@
-prefix=/home/hada/Workspace/example_workspace/install
-
-Name: beginner_tutorials
-Description: Description of beginner_tutorials
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 
