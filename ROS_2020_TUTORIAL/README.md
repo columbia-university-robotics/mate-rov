@@ -65,3 +65,8 @@ Voila! :) enjoy the fruits of your labor as we will modify the ROS package you g
 
 I'm sure I'll be able to recommend / you'll find more tutorials useful as we continue onwards but please take this moment to feel proud of yourself!
 
+### Now I ask you to notice a directory called "example_workspace"
+That directory is meant as a guide to building your own workspace.
+Please remember to catkin_make it from the workspaces root directory,
+And then source its devel/setup.bash file.
+
