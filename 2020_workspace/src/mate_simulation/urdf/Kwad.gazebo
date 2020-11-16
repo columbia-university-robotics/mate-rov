@@ -11,6 +11,14 @@
 		<material>Gazebo/White</material>
 	</gazebo>
 	
+	<gazebo reference="base_link3">
+		<material>Gazebo/Blue</material>
+	</gazebo>
+
+	<gazebo reference="base_link4">
+		<material>Gazebo/Green</material>
+	</gazebo>
+
 	<gazebo reference="plate1">
 		<material>Gazebo/Black</material>
 	</gazebo>
@@ -90,9 +98,26 @@
 	<gazebo reference="prop_back_left">
 		<material>Gazebo/Black</material>
 	</gazebo>
+
+	<gazebo reference="prop_front_middle">
+		<material>Gazebo/Black</material>
+	</gazebo>
+
+	<gazebo reference="prop_back_middle">
+		<material>Gazebo/Black</material>
+	</gazebo>
+
+	<gazebo reference="prop_right_middle">
+		<material>Gazebo/Black</material>
+	</gazebo>
+
+	<gazebo reference="prop_left_middle">
+		<material>Gazebo/Black</material>
+	</gazebo>
 	
 	<!-- ================================= -->
 	<!-- Define the lift-Drag plugin -->
+	<!-- The command must be +-+- format inside "data: []" -->
 	<gazebo>
 		<!-- Provide a Positive Velocity -->
 		<plugin name="quad_prop1" filename="libLiftDragPlugin.so">
@@ -176,9 +201,52 @@
 			<control_joint>joint_back_left_prop</control_joint>
 		</plugin>
 	</gazebo>
-	<!-- The command must be +-+- format inside "data: []" -->
-	<!--<gazebo>
-		<plugin name="quad_prop4" filename="libLiftDragPlugin.so">
+
+	<gazebo>
+		<!-- Provide a Positive Velocity -->
+		<plugin name="quad_prop5" filename="libLiftDragPlugin.so">
+			<a0>0.1</a0>
+			<cla>0.1</cla>
+			<cda>0.01</cda>
+			<cma>0.0</cma>
+			<alpha_stall>0.2</alpha_stall>
+			<cla_stall>-0.2</cla_stall>
+			<cda_stall>1.0</cda_stall>
+			<cma_stall>0.0</cma_stall>
+			<cp>0 0.5 0</cp>
+			<area>0.762</area>
+			<air_density>1.2041</air_density>
+			<forward>1 0 0</forward>
+			<upward>0 0 -1</upward>
+			<link_name>prop_front_middle</link_name>
+			<control_joint>joint_front_middle_prop</control_joint>
+		</plugin>
+	</gazebo>
+	
+	<gazebo>
+		<!-- Provide a Positive Velocity -->
+		<plugin name="quad_prop6" filename="libLiftDragPlugin.so">
+			<a0>0.1</a0>
+			<cla>0.1</cla>
+			<cda>0.01</cda>
+			<cma>0.0</cma>
+			<alpha_stall>0.2</alpha_stall>
+			<cla_stall>-0.2</cla_stall>
+			<cda_stall>1.0</cda_stall>
+			<cma_stall>0.0</cma_stall>
+			<cp>0 0.5 0</cp>
+			<area>0.762</area>
+			<air_density>1.2041</air_density>
+			<forward>1 0 0</forward>
+			<upward>0 0 -1</upward>
+			<link_name>prop_back_middle</link_name>
+			<control_joint>joint_back_middle_prop</control_joint>
+		</plugin>
+	</gazebo>
+	
+	<gazebo>
+		<!-- Provide a Negative Velocity -->
+		<plugin name="quad_prop7" filename="libLiftDragPlugin.so">
 			<a0>0.1</a0>
 			<cla>0.1</cla>
 			<cda>0.01</cda>
@@ -192,10 +260,31 @@
 			<air_density>1.2041</air_density>
 			<forward>1 0 0</forward>
 			<upward>0 0 1</upward>
-			<link_name>prop_back_left</link_name>
-			<control_joint>joint_back_left_prop</control_joint>
+			<link_name>prop_right_middle</link_name>
+			<control_joint>joint_right_middle_prop</control_joint>
 		</plugin>
-	</gazebo>-->
+	</gazebo>
+	
+	<gazebo>
+		<!-- Provide a Negative Velocity -->
+		<plugin name="quad_prop8" filename="libLiftDragPlugin.so">
+			<a0>0.1</a0>
+			<cla>0.1</cla>
+			<cda>0.01</cda>
+			<cma>0.0</cma>
+			<alpha_stall>0.2</alpha_stall>
+			<cla_stall>-0.2</cla_stall>
+			<cda_stall>1.0</cda_stall>
+			<cma_stall>0.0</cma_stall>
+			<cp>0 0.5 0</cp>
+			<area>0.762</area>
+			<air_density>1.2041</air_density>
+			<forward>1 0 0</forward>
+			<upward>0 0 1</upward>
+			<link_name>prop_left_middle</link_name>
+			<control_joint>joint_left_middle_prop</control_joint>
+		</plugin>
+	</gazebo>
 	
 	<!-- Load the gazebo_ros_control plugin -->
 	<gazebo>

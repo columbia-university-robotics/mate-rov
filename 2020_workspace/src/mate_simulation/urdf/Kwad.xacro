@@ -43,7 +43,6 @@
 		</collision>
 		
 		<xacro:default_inertial mass="${mass_fr}" p="${pi_value/4}" ix_value="${0.04989/2}" iy_value="${0.04989/2}" iz_value="${0.24057/2}" />
-		
 	</link>
 <!-- ======================================================== -->	
 	<link name="base_link2">
@@ -59,6 +58,50 @@
 		
 		<collision>
 			<origin xyz="0 0 0" rpy="0 0 ${-pi_value/4}" />
+			
+			<geometry>
+				<box size="${width} ${length} ${height}" />
+			</geometry>
+		</collision>
+		
+		<xacro:default_inertial mass="${mass_fr}" p="${-pi_value/4}" ix_value="${0.04989/2}" iy_value="${0.04989/2}" iz_value="${0.24057/2}" />
+	</link>
+<!-- ======================================================== -->	
+	<link name="base_link3">
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			
+			<geometry>
+				<box size="${width} ${length} ${height}" />
+			</geometry>
+			
+			<material name="blue" />
+		</visual>
+		
+		<collision>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			
+			<geometry>
+				<box size="${width} ${length} ${height}" />
+			</geometry>
+		</collision>
+		
+		<xacro:default_inertial mass="${mass_fr}" p="${pi_value/4}" ix_value="${0.04989/2}" iy_value="${0.04989/2}" iz_value="${0.24057/2}" />
+	</link>
+<!-- ======================================================== -->	
+	<link name="base_link4">
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 ${pi_value/2}" />
+			
+			<geometry>
+				<box size="${width} ${length} ${height}" />
+			</geometry>
+			
+			<material name="green" />
+		</visual>
+		
+		<collision>
+			<origin xyz="0 0 0" rpy="0 0 ${pi_value/2}" />
 			
 			<geometry>
 				<box size="${width} ${length} ${height}" />
@@ -328,8 +371,96 @@
 		<xacro:default_inertial mass="${mass_pr}" p="${0}"  ix_value="${0}" iy_value="${0}" iz_value="${4.42448e-5}" />
 		
 	</link>
+
+	<link name="prop_front_middle">
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			
+			<geometry>
+				<box size="${0.03302/3} ${radiusp*0.8} ${0.001}" />
+			</geometry>
+			
+			<material name="black" />
+		</visual>
+		
+		<collision>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			
+			<geometry>
+				<box size="${0.03302/3} ${radiusp*0.8} ${0.001}" />
+			</geometry>
+		</collision>
+		
+		<xacro:default_inertial mass="${mass_pr}" p="${0}" ix_value="${0}" iy_value="${0}" iz_value="${4.42448e-5}" />	
+	</link>
+
+	<link name="prop_back_middle">
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			
+			<geometry>
+				<box size="${0.03302/3} ${radiusp*0.8} ${0.001}" />
+			</geometry>
+			
+			<material name="black" />
+		</visual>
+		
+		<collision>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			
+			<geometry>
+				<box size="${0.03302/3} ${radiusp*0.8} ${0.001}" />
+			</geometry>
+		</collision>
+		
+		<xacro:default_inertial mass="${mass_pr}" p="${0}" ix_value="${0}" iy_value="${0}" iz_value="${4.42448e-5}" />	
+	</link>
+
+	<link name="prop_right_middle">
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			
+			<geometry>
+				<box size="${0.03302/3} ${radiusp*0.8} ${0.001}" />
+			</geometry>
+			
+			<material name="black" />
+		</visual>
+		
+		<collision>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			
+			<geometry>
+				<box size="${0.03302/3} ${radiusp*0.8} ${0.001}" />
+			</geometry>
+		</collision>
+		
+		<xacro:default_inertial mass="${mass_pr}" p="${0}" ix_value="${0}" iy_value="${0}" iz_value="${4.42448e-5}" />	
+	</link>
+
+	<link name="prop_left_middle">
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			
+			<geometry>
+				<box size="${0.03302/3} ${radiusp*0.8} ${0.001}" />
+			</geometry>
+			
+			<material name="black" />
+		</visual>
+		
+		<collision>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			
+			<geometry>
+				<box size="${0.03302/3} ${radiusp*0.8} ${0.001}" />
+			</geometry>
+		</collision>
+		
+		<xacro:default_inertial mass="${mass_pr}" p="${0}" ix_value="${0}" iy_value="${0}" iz_value="${4.42448e-5}" />	
+	</link>
 <!-- ======================================================== -->
-	<!-- Define the joint between the arms of the frame -->
+<!-- Define the joint between the arms of the frame -->
 	<joint name="center" type="fixed">
 		<parent link="base_link1" />
 		<child link="base_link2" />
@@ -338,7 +469,25 @@
 		<axis xyz="0 0 1" />
 	</joint>
 <!-- ======================================================== -->
-	<!-- Define joint between prop fr and frame -->
+<!-- Define the joint between the arms of the frame 2 -->
+	<joint name="center2" type="fixed">
+		<parent link="base_link2" />
+		<child link="base_link3" />
+		
+		<origin xyz="0 0 0" rpy="0 0 0"/>
+		<axis xyz="0 0 1" />
+	</joint>
+<!-- ======================================================== -->
+<!-- Define the joint between the arms of the frame 3 -->
+	<joint name="center3" type="fixed">
+		<parent link="base_link3" />
+		<child link="base_link4" />
+		
+		<origin xyz="0 0 0" rpy="0 0 0"/>
+		<axis xyz="0 0 1" />
+	</joint>
+<!-- ======================================================== -->
+<!-- Define joint between prop fr and frame -->
 	<joint name="joint_front_right_prop" type="continuous">
 		<parent link="base_link2" />
 		<child link="prop_front_right" />
@@ -346,7 +495,7 @@
 		<axis xyz="0 0 1" />
 	</joint>
 <!-- ======================================================== -->
-	<!-- Define joint between prop fl and frame -->
+<!-- Define joint between prop fl and frame -->
 	<joint name="joint_front_left_prop" type="continuous">
 		<parent link="base_link1" />
 		<child link="prop_front_left" />
@@ -367,6 +516,38 @@
 		<parent link="base_link2" />
 		<child link="prop_back_left" />
 		<origin xyz="${-prop_loc + 0.01} ${-prop_loc + 0.01} 0.021" rpy="${-pi_value/2} 0 ${-pi_value/4}" />
+		<axis xyz="0 0 1" />
+	</joint>
+<!-- ======================================================== -->
+<!-- Define joint between prop fm and frame -->
+	<joint name="joint_front_middle_prop" type="continuous">
+		<parent link="base_link3" />
+		<child link="prop_front_middle" />
+		<origin xyz="0 ${prop_loc - 0.01} 0.021" rpy="0 0 ${pi_value/2}"/>
+		<axis xyz="0 0 1" />
+	</joint>
+<!-- ======================================================== -->
+<!-- Define joint between prop bm and frame -->
+	<joint name="joint_back_middle_prop" type="continuous">
+		<parent link="base_link3" />
+		<child link="prop_back_middle" />
+		<origin xyz="0 ${-prop_loc + 0.01} 0.021" rpy="0 0 ${-pi_value/2}" />
+		<axis xyz="0 0 1" />
+	</joint>
+<!-- ======================================================== -->
+<!-- Define joint between prop rm and frame -->
+	<joint name="joint_right_middle_prop" type="continuous">
+		<parent link="base_link4" />
+		<child link="prop_right_middle" />
+		<origin xyz="${prop_loc - 0.01} 0 0.021" rpy="0 0 0" />
+		<axis xyz="0 0 1" />
+	</joint>
+<!-- ======================================================== -->
+<!-- Define joint between prop lm and frame -->
+	<joint name="joint_left_middle_prop" type="continuous">
+		<parent link="base_link4" />
+		<child link="prop_left_middle" />
+		<origin xyz="${-prop_loc + 0.01} 0 0.021" rpy="0 0 0" />
 		<axis xyz="0 0 1" />
 	</joint>
 <!-- ======================================================== -->
@@ -474,6 +655,50 @@
 			<hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
 		</joint>
 		<actuator name="BLDC_motor4">
+			<hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+			<mechanicalReduction>1</mechanicalReduction>
+		</actuator>
+	</transmission>
+
+	<transmission name="front_middle_motor_joint" >
+		<type>transmission_interface/SimpleTransmission</type>	
+		<joint name="joint_front_middle_prop">
+			<hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+		</joint>
+		<actuator name="BLDC_motor5">
+			<hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+			<mechanicalReduction>1</mechanicalReduction>
+		</actuator>
+	</transmission>
+
+	<transmission name="back_middle_motor_joint" >
+		<type>transmission_interface/SimpleTransmission</type>	
+		<joint name="joint_back_middle_prop">
+			<hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+		</joint>
+		<actuator name="BLDC_motor6">
+			<hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+			<mechanicalReduction>1</mechanicalReduction>
+		</actuator>
+	</transmission>
+
+	<transmission name="right_middle_motor_joint" >
+		<type>transmission_interface/SimpleTransmission</type>	
+		<joint name="joint_right_middle_prop">
+			<hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+		</joint>
+		<actuator name="BLDC_motor7">
+			<hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+			<mechanicalReduction>1</mechanicalReduction>
+		</actuator>
+	</transmission>
+
+	<transmission name="left_middle_motor_joint" >
+		<type>transmission_interface/SimpleTransmission</type>	
+		<joint name="joint_left_middle_prop">
+			<hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+		</joint>
+		<actuator name="BLDC_motor8">
 			<hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
 			<mechanicalReduction>1</mechanicalReduction>
 		</actuator>
