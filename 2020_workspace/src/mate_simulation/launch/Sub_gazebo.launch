@@ -1,8 +1,13 @@
 <launch>
 	
+	<arg name="robot_x"   default="0.0" />
+	<arg name="robot_y"   default="0.0" />
+	<arg name="robot_z"   default="5.0" />
+	<arg name="robot_yaw" default="0.0" />
+	
 	<include file="$(find gazebo_ros)/launch/empty_world.launch">
 		<arg name="world_name" value="$(find fly_bot)/worlds/underwater.world" />
-		<arg name="paused" default="false" />
+		<arg name="paused" default="true" />
 		<arg name="use_sim_time" default="true" />
 		<arg name="gui" default="true" />
 		<arg name="headless" default="false" />
@@ -13,7 +18,8 @@
 		
 		<param name="robot_description" command="$(find xacro)xacro '$(find fly_bot)/urdf/Kwad.xacro'" />
 		
-		<node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen" args="-param robot_description -urdf -model Kwad" />
+		<!-- Spawn the robot into Gazebo -->
+		<node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen" args="-param robot_description -urdf -model Kwad -x $(arg robot_x) -y $(arg robot_y) -z $(arg robot_z) -Y $(arg robot_yaw)" />
 		
 		<rosparam file="$(find fly_bot)/config/Kwad_control.yaml" command="load" ns="/Kwad" />
 		
