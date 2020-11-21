@@ -491,7 +491,7 @@
 	<joint name="joint_front_right_prop" type="continuous">
 		<parent link="base_link2" />
 		<child link="prop_front_right" />
-		<origin xyz="${prop_loc - 0.01} ${prop_loc - 0.01} 0.021" rpy="${pi_value/2} 0 ${-pi_value/4}"/>
+		<origin xyz="${prop_loc - 0.01} ${prop_loc - 0.01} 0.021" rpy="${pi_value/2} 0 ${pi_value/4}"/>
 		<axis xyz="0 0 1" />
 	</joint>
 <!-- ======================================================== -->
@@ -499,7 +499,7 @@
 	<joint name="joint_front_left_prop" type="continuous">
 		<parent link="base_link1" />
 		<child link="prop_front_left" />
-		<origin xyz="${-prop_loc + 0.01} ${prop_loc - 0.01} 0.021" rpy="${pi_value/2} 0 ${pi_value/4}" />
+		<origin xyz="${-prop_loc + 0.01} ${prop_loc - 0.01} 0.021" rpy="${pi_value/2} 0 ${-pi_value/4}" />
 		<axis xyz="0 0 1" />
 	</joint>
 <!-- ======================================================== -->
@@ -507,15 +507,15 @@
 	<joint name="joint_back_right_prop" type="continuous">
 		<parent link="base_link1" />
 		<child link="prop_back_right" />
-		<origin xyz="${prop_loc - 0.01} ${-prop_loc + 0.01} 0.021" rpy="${pi_value/2} 0 ${pi_value/4}" />
+		<origin xyz="${prop_loc - 0.01} ${-prop_loc + 0.01} 0.021" rpy="${pi_value/2} 0 ${-pi_value/4}" />
 		<axis xyz="0 0 1" />
 	</joint>
 <!-- ======================================================== -->
-<!-- Define joint between prop br and frame -->
+<!-- Define joint between prop bl and frame -->
 	<joint name="joint_back_left_prop" type="continuous">
 		<parent link="base_link2" />
 		<child link="prop_back_left" />
-		<origin xyz="${-prop_loc + 0.01} ${-prop_loc + 0.01} 0.021" rpy="${-pi_value/2} 0 ${-pi_value/4}" />
+		<origin xyz="${-prop_loc + 0.01} ${-prop_loc + 0.01} 0.021" rpy="${-pi_value/2} 0 ${pi_value/4}" />
 		<axis xyz="0 0 1" />
 	</joint>
 <!-- ======================================================== -->
