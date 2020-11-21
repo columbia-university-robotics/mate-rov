@@ -4,8 +4,10 @@
 	<xacro:property name="width" value="0.0315" />
 	<xacro:property name="length" value="0.45" />
 	<xacro:property name="height" value="0.01" />
-	<xacro:property name="mass_fr" value="0.5" />
-	<xacro:property name="mass_pr" value="0.0055" />
+	<xacro:property name="mass_fr" value="0.005" />
+	<!-- <xacro:property name="mass_fr" value="0.5" />
+	<xacro:property name="mass_pr" value="0.0055" /> -->
+	<xacro:property name="mass_pr" value="0.00055" />
 	<xacro:property name="pi_value" value="3.14159263" />
 	<xacro:property name="radiusp" value="0.20" />
 	<xacro:property name="prop_loc" value="0.15909" />
