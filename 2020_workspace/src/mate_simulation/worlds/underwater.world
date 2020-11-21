@@ -2,7 +2,8 @@
   <world name='default'>
     <gui fullscreen='0'>
       <camera name='user_camera'>
-        <pose>10 11 10 0 0 -2.356</pose>
+        <!-- <pose>10 11 10 0 0 -2.356</pose> -->
+	<pose>6.371 7.596 11.682 0 0.736 -2.320</pose>
         <view_controller>orbit</view_controller>
         <projection_type>perspective</projection_type>
       </camera>
@@ -79,7 +80,8 @@
         <kinematic>0</kinematic>
       </link>
     </model>
-    <model name='submarine_sinking'>
+<!---
+      <model name='submarine_sinking'>
       <pose>5 0 10 1.57 -0 0</pose>
       <link name='body'>
         <pose>0 0 -1.07935 0 -0 0</pose>
@@ -329,6 +331,7 @@
         <fluid_density>999.1026</fluid_density>
       </plugin>
     </model>
+
     <model name='submarine'>
       <pose>0 0 10 1.57 -0 0</pose>
       <link name='body'>
@@ -636,6 +639,7 @@
       </plugin>
       <enable_wind>1</enable_wind>
     </model>
+
     <model name='submarine_buoyant'>
       <pose>-5 0 10 1.57 -0 0</pose>
       <link name='body'>
@@ -886,6 +890,7 @@
         <fluid_density>999.1026</fluid_density>
       </plugin>
     </model>
+--->
     <model name='ceiling_plane'>
       <static>1</static>
       <pose>0 0 40 0 -0 0</pose>
@@ -1030,6 +1035,7 @@
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
+<!---
       <model name='submarine'>
         <pose>0 0 10 1.57 -0 0</pose>
         <scale>1 1 1</scale>
@@ -1046,6 +1052,7 @@
           <wrench>0.004002 0.011539 0.00294 0 -0 0</wrench>
         </link>
       </model>
+
       <model name='submarine_buoyant'>
         <pose>-5 0 10 1.57 -0 0</pose>
         <scale>1 1 1</scale>
@@ -1062,6 +1069,7 @@
           <wrench>0.854858 -0.712217 4.41665 0 -0 0</wrench>
         </link>
       </model>
+
       <model name='submarine_sinking'>
         <pose>5 0 10 1.57 -0 0</pose>
         <scale>1 1 1</scale>
@@ -1078,6 +1086,7 @@
           <wrench>-4.28254 2.2921 20.7184 0 -0 0</wrench>
         </link>
       </model>
+--->
       <light name='sun'>
         <pose>0 0 100 0 -0 0</pose>
       </light>
