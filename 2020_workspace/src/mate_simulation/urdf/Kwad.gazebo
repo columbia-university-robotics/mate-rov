@@ -293,6 +293,13 @@
 			<robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
 		</plugin>
 	</gazebo>
+
+	<!-- Load the buoyancy plugin -->
+	<gazebo>
+		<plugin name='buoyancy' filename='libBuoyancyPlugin.so'>
+			<fluid_density>1000</fluid_density>
+		</plugin>
+	</gazebo>
 	
 	<!-- ================================= -->
 	<!-- <gazebo>
