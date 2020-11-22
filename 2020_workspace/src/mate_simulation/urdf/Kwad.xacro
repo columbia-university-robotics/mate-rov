@@ -4,7 +4,7 @@
 	<xacro:property name="width" value="0.0315" />
 	<xacro:property name="length" value="0.45" />
 	<xacro:property name="height" value="0.01" />
-	<xacro:property name="mass_fr" value="0.005" />
+	<xacro:property name="mass_fr" value="0.1755" />
 	<!-- <xacro:property name="mass_fr" value="0.5" />
 	<xacro:property name="mass_pr" value="0.0055" /> -->
 	<xacro:property name="mass_pr" value="0.00055" />
