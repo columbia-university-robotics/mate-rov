@@ -4,10 +4,9 @@
 	<xacro:property name="width" value="0.0315" />
 	<xacro:property name="length" value="0.45" />
 	<xacro:property name="height" value="0.01" />
-	<xacro:property name="mass_fr" value="0.1755" />
-	<!-- <xacro:property name="mass_fr" value="0.5" />
-	<xacro:property name="mass_pr" value="0.0055" /> -->
-	<xacro:property name="mass_pr" value="0.00055" />
+	<xacro:property name="mass_fr" value="0.165" />
+	<xacro:property name="mass_pr" value="0.0055" />
+	<!-- <xacro:property name="mass_fr" value="0.5" /> -->
 	<xacro:property name="pi_value" value="3.14159263" />
 	<xacro:property name="radiusp" value="0.20" />
 	<xacro:property name="prop_loc" value="0.15909" />
@@ -382,7 +381,7 @@
 				<box size="${0.03302/3} ${radiusp*0.8} ${0.001}" />
 			</geometry>
 			
-			<material name="black" />
+			<material name="golden" />
 		</visual>
 		
 		<collision>
@@ -501,7 +500,7 @@
 	<joint name="joint_front_left_prop" type="continuous">
 		<parent link="base_link1" />
 		<child link="prop_front_left" />
-		<origin xyz="${-prop_loc + 0.01} ${prop_loc - 0.01} 0.021" rpy="${pi_value/2} 0 ${-pi_value/4}" />
+		<origin xyz="${-prop_loc + 0.01} ${prop_loc - 0.01} 0.021" rpy="${pi_value/2} 0 ${3*pi_value/4}" />
 		<axis xyz="0 0 1" />
 	</joint>
 <!-- ======================================================== -->
@@ -549,7 +548,7 @@
 	<joint name="joint_left_middle_prop" type="continuous">
 		<parent link="base_link4" />
 		<child link="prop_left_middle" />
-		<origin xyz="${-prop_loc + 0.01} 0 0.021" rpy="0 0 0" />
+		<origin xyz="${-prop_loc + 0.01} 0 0.021" rpy="0 0 ${pi_value}" />
 		<axis xyz="0 0 1" />
 	</joint>
 <!-- ======================================================== -->

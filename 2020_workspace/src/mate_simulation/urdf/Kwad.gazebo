@@ -100,7 +100,7 @@
 	</gazebo>
 
 	<gazebo reference="prop_front_middle">
-		<material>Gazebo/Black</material>
+		<material>Gazebo/Golden</material>
 	</gazebo>
 
 	<gazebo reference="prop_back_middle">
@@ -297,7 +297,7 @@
 	<!-- Load the buoyancy plugin -->
 	<gazebo>
 		<plugin name='buoyancy' filename='libBuoyancyPlugin.so'>
-			<fluid_density>1000</fluid_density>
+			<fluid_density>997</fluid_density>
 		</plugin>
 	</gazebo>
 	
