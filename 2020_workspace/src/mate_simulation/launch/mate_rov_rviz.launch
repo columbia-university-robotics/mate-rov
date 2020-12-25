@@ -1,6 +1,6 @@
 <launch>
 	<arg name="model" />
-	<param name="robot_description" command="$(find xacro)xacro '$(find fly_bot)/urdf/$(arg model)'" />
+	<param name="robot_description" command="$(find xacro)xacro '$(find mate_simulation)/urdf/$(arg model)'" />
 	
 	<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
 		<param name="use_gui" value="TRUE" />
@@ -8,6 +8,6 @@
 	
 	<node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
 	
-	<node name="rviz" pkg="rviz" type="rviz" args="-d $(find fly_bot)/urdf.rviz" required="true" />
+	<node name="rviz" pkg="rviz" type="rviz" args="-d $(find mate_simulation)/urdf.rviz" required="true" />
 	
 </launch>

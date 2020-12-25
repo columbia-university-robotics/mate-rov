@@ -1,0 +1,37 @@
+<launch>
+	
+	<include file="$(find gazebo_ros)/launch/empty_world.launch">
+		<arg name="world_name" value="$(find mate_simulation)/worlds/underwater.world" />
+		<arg name="paused" default="false" />
+		<arg name="use_sim_time" default="true" />
+		<arg name="gui" default="true" />
+		<arg name="headless" default="false" />
+		<arg name="debug" default="false" />
+	</include>
+	
+	<group ns="rov">
+		
+		<param name="robot_description" command="$(find xacro)xacro '$(find mate_simulation)/urdf/rov.xacro'" />
+		
+		<node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen" args="-param robot_description -urdf -model rov" />
+		
+		<rosparam file="$(find mate_simulation)/config/rov_control.yaml" command="load" ns="/rov" />
+		
+
+		<node name="control_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="--namespace=/rov joint_state_controller joint_motor_controller" />
+		
+		<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">
+			<!--<remap from="/joint_states" to="/rov/joint_states" />-->		
+			<param name="publish_frequency" type="double" value="5.0" />
+		</node>
+
+
+
+                <node pkg="mate_simulation" name="teleop_keyboard.py" type="teleop_keyboard.py" output="screen" />
+
+
+
+	</group>
+	
+		
+</launch>

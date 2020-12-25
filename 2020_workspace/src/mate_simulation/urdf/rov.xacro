@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="Kwad">
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="rov">
 <!-- ======================================================== -->
 	<xacro:property name="width" value="0.0315" />
 	<xacro:property name="length" value="0.45" />
@@ -11,8 +11,8 @@
 	<xacro:property name="radiusp" value="0.20" />
 	<xacro:property name="prop_loc" value="0.15909" />
 <!-- ======================================================== -->	
-	<xacro:include filename="$(find fly_bot)/urdf/material.xacro" />
-	<xacro:include filename="$(find fly_bot)/urdf/Kwad.gazebo" />
+	<xacro:include filename="$(find mate_simulation)/urdf/material.xacro" />
+	<xacro:include filename="$(find mate_simulation)/urdf/rov.gazebo" />
 <!-- ======================================================== -->
 	<!-- Define inertial macro -->
 	<xacro:macro name="default_inertial" params="mass p ix_value iy_value iz_value" >
@@ -248,7 +248,7 @@
 		<visual>
 			<origin xyz="0 0 0" rpy="0 0 0" />
 			<geometry>
-				<mesh filename="package://fly_bot/meshes/22V10.dae" scale="0.005 0.005 0.005" />
+				<mesh filename="package://mate_simulation/meshes/22V10.dae" scale="0.005 0.005 0.005" />
 			</geometry>
 		</visual>
 		<collision>
