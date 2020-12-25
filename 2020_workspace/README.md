@@ -19,7 +19,7 @@ You should now be able to control the ROV :) enjoy
 
 * WARNING : WE DO NOT HAVE ANY LIMITS ON THE PROPELLOR VALUES, press and let the buttons go to avoid sending an absurdly high signal to the propellors. 
 
-
+```
 Moving around:
         w         r               i         
    a    s    d    f           j   k   l
@@ -36,6 +36,7 @@ j/l : truck left/right
 anything else : stop
 
 CTRL-C to quit the keyboard control and then one more time to close the simulation
+```
 
 ### GIT WARNING
 DO NOT ADD the "build" and "devel" directories upon commits.
